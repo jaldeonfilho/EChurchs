@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Echurchs.API/Echurchs.API.csproj" />
+    <Project Path="src/Echurchs.Core/Echurchs.Core.csproj" />
+    <Project Path="src/Echurchs.Models/Echurchs.Models.csproj" />
+    <Project Path="src/Echurchs.Repository/Echurchs.Repository.csproj" />
+    <Project Path="src/Echurchs.Service/Echurchs.Service.csproj" />
+  </Folder>
+</Solution>

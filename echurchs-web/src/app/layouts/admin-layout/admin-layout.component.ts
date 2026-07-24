@@ -1,0 +1,670 @@
+import { Component, OnInit, ElementRef, HostListener } from '@angular/core';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
+import { AuthService } from '../../core/services/auth.service';
+import { CommunityService } from '../../core/services/community.service';
+
+@Component({
+  selector: 'app-admin-layout',
+  standalone: true,
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, FormsModule],
+  template: `
+    <!-- No community onboarding -->
+    <div class="onboarding" *ngIf="!hasCommunity">
+      <div class="onboarding-card">
+        <div class="onboarding-logo">
+          <span class="logo-icon">⛪</span>
+          <h1>Echurchs</h1>
+        </div>
+        <p class="onboarding-subtitle">Ligue a sua igreja à comunidade</p>
+
+        <div class="onboarding-actions">
+          <div class="action-card" (click)="showCreate = true; showSearch = false">
+            <div class="action-icon">➕</div>
+            <h3>Criar Comunidade</h3>
+            <p>Registre sua igreja e convide membros</p>
+          </div>
+          <div class="action-card" (click)="showSearch = true; showCreate = false">
+            <div class="action-icon">🔍</div>
+            <h3>Entrar numa Comunidade</h3>
+            <p>Pesquise e solicite entrada</p>
+          </div>
+        </div>
+
+        <!-- Create Community Form -->
+        <div class="onboarding-form" *ngIf="showCreate">
+          <h3>Criar sua Comunidade</h3>
+          <input type="text" [(ngModel)]="newCommunityName" placeholder="Nome da igreja" class="form-input">
+          <textarea [(ngModel)]="newCommunityDesc" placeholder="Descrição (opcional)" class="form-input" rows="2"></textarea>
+          <div class="form-row">
+            <input type="text" [(ngModel)]="newCommunityNipc" placeholder="NIPC (opcional)" class="form-input">
+            <input type="text" [(ngModel)]="newCommunityPhone" placeholder="Telefone (opcional)" class="form-input">
+          </div>
+          <input type="text" [(ngModel)]="newCommunityAddress" placeholder="Endereço (opcional)" class="form-input">
+          <div class="form-actions">
+            <button class="btn-secondary" (click)="showCreate = false">Cancelar</button>
+            <button class="btn-primary" (click)="createCommunity()" [disabled]="!newCommunityName || loading">
+              {{ loading ? 'Criando...' : 'Criar Comunidade' }}
+            </button>
+          </div>
+          <div class="form-error" *ngIf="formError">{{ formError }}</div>
+        </div>
+
+        <!-- Search Community -->
+        <div class="onboarding-form" *ngIf="showSearch">
+          <h3>Pesquisar Comunidade</h3>
+          <input type="text" [(ngModel)]="searchTerm" (input)="searchCommunities()" placeholder="Buscar por nome..." class="form-input">
+          <div class="search-results" *ngIf="searchResults.length > 0">
+            <div class="search-item" *ngFor="let c of searchResults" (click)="selectCommunity(c)">
+              <div class="search-item-avatar">{{ c.name.charAt(0) }}</div>
+              <div class="search-item-info">
+                <strong>{{ c.name }}</strong>
+                <span>{{ c.memberCount }} membros</span>
+              </div>
+              <button class="btn-small" (click)="joinCommunity(c.id); $event.stopPropagation()">Entrar</button>
+            </div>
+          </div>
+          <p class="no-results" *ngIf="searchTerm && searchResults.length === 0 && !loadingSearch">Nenhuma comunidade encontrada</p>
+        </div>
+
+        <div class="onboarding-footer">
+          <button class="btn-link" (click)="logout()">Sair da conta</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main App (has community) -->
+    <div class="app-layout" *ngIf="hasCommunity">
+      <!-- Top Navbar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <span class="topbar-logo">⛪</span>
+          <span class="topbar-brand">Echurchs</span>
+        </div>
+        <div class="topbar-center">
+          <div class="community-badge" *ngIf="communityName">
+            <span class="community-initial">{{ communityName.charAt(0) }}</span>
+            <span class="community-name">{{ communityName }}</span>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="user-menu" (click)="showUserMenu = !showUserMenu">
+            <div class="user-avatar">{{ userName.charAt(0) }}</div>
+            <span class="user-name">{{ userName }}</span>
+            <div class="dropdown-menu" *ngIf="showUserMenu">
+              <a routerLink="/settings" (click)="showUserMenu = false">⚙️ Configurações</a>
+              <a (click)="logout()">🚪 Sair</a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content Area -->
+      <div class="app-body">
+        <!-- Left Sidebar -->
+        <aside class="left-sidebar">
+          <nav class="sidebar-nav">
+            <a routerLink="/feed" routerLinkActive="active" class="nav-item">
+              <span class="nav-icon">🏠</span>
+              <span>Feed</span>
+            </a>
+            <a routerLink="/members" routerLinkActive="active" class="nav-item">
+              <span class="nav-icon">👥</span>
+              <span>Membros</span>
+            </a>
+            <a routerLink="/groups" routerLinkActive="active" class="nav-item">
+              <span class="nav-icon">👨‍👩‍👧‍👦</span>
+              <span>Grupos</span>
+            </a>
+            <a routerLink="/events" routerLinkActive="active" class="nav-item">
+              <span class="nav-icon">📅</span>
+              <span>Eventos</span>
+            </a>
+            <a routerLink="/announcements" routerLinkActive="active" class="nav-item">
+              <span class="nav-icon">📢</span>
+              <span>Avisos</span>
+            </a>
+            <a routerLink="/media" routerLinkActive="active" class="nav-item">
+              <span class="nav-icon">📸</span>
+              <span>Mídias</span>
+            </a>
+            <a routerLink="/teaching" routerLinkActive="active" class="nav-item">
+              <span class="nav-icon">📖</span>
+              <span>Ensino</span>
+            </a>
+            <a routerLink="/live" routerLinkActive="active" class="nav-item">
+              <span class="nav-icon">📡</span>
+              <span>Cultos Online</span>
+            </a>
+
+            <div class="nav-divider"></div>
+            <div class="nav-section-title">Financeiro</div>
+            <a routerLink="/financial" routerLinkActive="active" class="nav-item">
+              <span class="nav-icon">💰</span>
+              <span>Financeiro</span>
+            </a>
+            <a routerLink="/donations" routerLinkActive="active" class="nav-item">
+              <span class="nav-icon">💝</span>
+              <span>Doações</span>
+            </a>
+
+            <div class="nav-divider"></div>
+            <div class="nav-section-title">Comunicação</div>
+            <a routerLink="/messages" routerLinkActive="active" class="nav-item">
+              <span class="nav-icon">💬</span>
+              <span>Mensagens</span>
+            </a>
+            <a routerLink="/friends" routerLinkActive="active" class="nav-item">
+              <span class="nav-icon">🤝</span>
+              <span>Amigos</span>
+            </a>
+          </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+          <router-outlet></router-outlet>
+        </main>
+
+        <!-- Right Sidebar (Quick Info) -->
+        <aside class="right-sidebar">
+          <div class="sidebar-card">
+            <h4>Minha Comunidade</h4>
+            <div class="community-info">
+              <div class="community-avatar">{{ communityName.charAt(0) }}</div>
+              <div>
+                <strong>{{ communityName }}</strong>
+                <span class="member-count">{{ memberCount }} membros</span>
+              </div>
+            </div>
+          </div>
+          <div class="sidebar-card">
+            <h4>Meu Plano</h4>
+            <p class="plan-name">{{ planName || 'Free' }}</p>
+          </div>
+        </aside>
+      </div>
+    </div>
+  `,
+  styles: [`
+    /* ========== ONBOARDING ========== */
+    .onboarding {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 2rem;
+    }
+    .onboarding-card {
+      background: white;
+      border-radius: 16px;
+      padding: 3rem;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    .onboarding-logo {
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+    .onboarding-logo .logo-icon { font-size: 3rem; }
+    .onboarding-logo h1 { font-size: 2rem; color: #1c1e21; margin-top: 0.5rem; }
+    .onboarding-subtitle {
+      text-align: center;
+      color: #65676b;
+      margin-bottom: 2rem;
+      font-size: 1.1rem;
+    }
+    .onboarding-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .action-card {
+      border: 2px solid #e4e6eb;
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .action-card:hover {
+      border-color: #1877f2;
+      background: #f0f7ff;
+    }
+    .action-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .action-card h3 { font-size: 1rem; margin-bottom: 0.25rem; color: #1c1e21; }
+    .action-card p { font-size: 0.8rem; color: #65676b; }
+    .onboarding-form {
+      border-top: 1px solid #e4e6eb;
+      padding-top: 1.5rem;
+    }
+    .onboarding-form h3 { margin-bottom: 1rem; font-size: 1.1rem; }
+    .form-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #dddfe2;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      margin-bottom: 0.75rem;
+      outline: none;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+    .form-input:focus { border-color: #1877f2; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .form-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 0.5rem; }
+    .form-error { color: #e74c3c; font-size: 0.875rem; margin-top: 0.5rem; }
+
+    .btn-primary {
+      padding: 0.6rem 1.5rem;
+      background: #1877f2;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover { background: #166fe5; }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .btn-secondary {
+      padding: 0.6rem 1.5rem;
+      background: #e4e6eb;
+      color: #1c1e21;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+    .btn-secondary:hover { background: #d8dadf; }
+
+    .search-results { margin-top: 0.75rem; max-height: 300px; overflow-y: auto; }
+    .search-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .search-item:hover { background: #f0f2f5; }
+    .search-item-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #1877f2;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+    .search-item-info { flex: 1; }
+    .search-item-info strong { display: block; font-size: 0.95rem; }
+    .search-item-info span { font-size: 0.8rem; color: #65676b; }
+    .btn-small {
+      padding: 0.4rem 0.8rem;
+      background: #1877f2;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .no-results { color: #65676b; font-size: 0.9rem; margin-top: 0.5rem; }
+    .onboarding-footer { text-align: center; margin-top: 2rem; }
+    .btn-link {
+      background: none;
+      border: none;
+      color: #65676b;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .btn-link:hover { text-decoration: underline; color: #1c1e21; }
+
+    /* ========== APP LAYOUT ========== */
+    .app-layout { min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* Top Navbar */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1rem;
+      z-index: 100;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 0.5rem; }
+    .topbar-logo { font-size: 1.5rem; }
+    .topbar-brand { font-size: 1.3rem; font-weight: 700; color: #1877f2; }
+    .topbar-center { flex: 1; display: flex; justify-content: center; }
+    .community-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #f0f2f5;
+      padding: 0.3rem 1rem 0.3rem 0.3rem;
+      border-radius: 20px;
+    }
+    .community-initial {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #1877f2;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+    .community-name { font-weight: 600; font-size: 0.9rem; color: #1c1e21; }
+    .topbar-right { position: relative; }
+    .user-menu { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.3rem; border-radius: 20px; transition: background 0.2s; }
+    .user-menu:hover { background: #f0f2f5; }
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #e4e6eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+    .user-name { font-weight: 500; font-size: 0.9rem; }
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      min-width: 200px;
+      padding: 0.5rem 0;
+      margin-top: 0.5rem;
+    }
+    .dropdown-menu a {
+      display: block;
+      padding: 0.6rem 1rem;
+      color: #1c1e21;
+      font-size: 0.9rem;
+      text-decoration: none;
+    }
+    .dropdown-menu a:hover { background: #f0f2f5; text-decoration: none; }
+
+    /* Body */
+    .app-body {
+      display: flex;
+      margin-top: 56px;
+      min-height: calc(100vh - 56px);
+    }
+
+    /* Left Sidebar */
+    .left-sidebar {
+      width: 260px;
+      position: fixed;
+      top: 56px;
+      left: 0;
+      bottom: 0;
+      overflow-y: auto;
+      padding: 1rem 0.5rem;
+      background: white;
+      border-right: 1px solid #e4e6eb;
+    }
+    .sidebar-nav { display: flex; flex-direction: column; gap: 2px; }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.6rem 0.75rem;
+      border-radius: 8px;
+      color: #1c1e21;
+      font-size: 0.95rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .nav-item:hover { background: #f0f2f5; text-decoration: none; }
+    .nav-item.active { background: #e7f3ff; color: #1877f2; }
+    .nav-icon { font-size: 1.2rem; width: 24px; text-align: center; }
+    .nav-divider { height: 1px; background: #e4e6eb; margin: 0.5rem 0.75rem; }
+    .nav-section-title {
+      padding: 0.25rem 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #65676b;
+      letter-spacing: 0.5px;
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      margin-left: 260px;
+      margin-right: 280px;
+      padding: 1.5rem;
+      max-width: 100%;
+    }
+
+    /* Right Sidebar */
+    .right-sidebar {
+      width: 280px;
+      position: fixed;
+      top: 56px;
+      right: 0;
+      bottom: 0;
+      overflow-y: auto;
+      padding: 1rem;
+      background: white;
+      border-left: 1px solid #e4e6eb;
+    }
+    .sidebar-card {
+      background: #f0f2f5;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .sidebar-card h4 {
+      font-size: 0.85rem;
+      color: #65676b;
+      margin-bottom: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .community-info { display: flex; align-items: center; gap: 0.75rem; }
+    .community-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #1877f2;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .community-info strong { display: block; font-size: 1rem; }
+    .member-count { font-size: 0.8rem; color: #65676b; }
+    .plan-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #1877f2;
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .right-sidebar { display: none; }
+      .main-content { margin-right: 0; }
+    }
+    @media (max-width: 900px) {
+      .left-sidebar { display: none; }
+      .main-content { margin-left: 0; }
+    }
+  `]
+})
+export class AdminLayoutComponent implements OnInit {
+  hasCommunity = false;
+  communityName = '';
+  memberCount = 0;
+  planName = '';
+  userName = '';
+  showUserMenu = false;
+
+  showCreate = false;
+  showSearch = false;
+  newCommunityName = '';
+  newCommunityDesc = '';
+  newCommunityNipc = '';
+  newCommunityPhone = '';
+  newCommunityAddress = '';
+  searchTerm = '';
+  searchResults: any[] = [];
+  formError = '';
+  loading = false;
+  loadingSearch = false;
+
+  constructor(
+    private authService: AuthService,
+    private communityService: CommunityService,
+    private router: Router,
+    private elementRef: ElementRef
+  ) {}
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (this.showUserMenu) {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.user-menu')) {
+        this.showUserMenu = false;
+      }
+    }
+  }
+
+  ngOnInit(): void {
+    this.userName = this.authService.currentUser?.name ?? '';
+    this.checkCommunity();
+  }
+
+  checkCommunity(): void {
+    const communityId = this.authService.currentCommunityId;
+    if (communityId) {
+      this.hasCommunity = true;
+      this.communityName = this.authService.currentCommunityName ?? '';
+      this.communityService.getById(communityId).subscribe(r => {
+        if (r.success && r.data) {
+          this.memberCount = r.data.memberCount;
+          this.planName = r.data.planName ?? 'Free';
+        }
+      });
+    } else {
+      this.hasCommunity = false;
+    }
+  }
+
+  createCommunity(): void {
+    this.loading = true;
+    this.formError = '';
+    this.communityService.create({
+      name: this.newCommunityName,
+      description: this.newCommunityDesc,
+      nipc: this.newCommunityNipc || undefined,
+      phone: this.newCommunityPhone || undefined,
+      address: this.newCommunityAddress || undefined
+    }).subscribe({
+      next: (r) => {
+        this.loading = false;
+        if (r.success && r.data) {
+          // Reload user data to get updated membership
+          const user = this.authService.currentUser;
+          if (user && user.memberships) {
+            user.memberships.push({
+              id: '',
+              communityId: r.data.id,
+              communityName: r.data.name,
+              role: 'Admin',
+              status: 'Active',
+              createdAt: new Date().toISOString()
+            });
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            this.authService.refreshUser();
+          }
+          this.checkCommunity();
+        } else {
+          this.formError = r.message || 'Erro ao criar comunidade';
+        }
+      },
+      error: (err: HttpErrorResponse) => {
+        console.error('Community creation error:', err);
+        this.loading = false;
+        if (err.error?.message) {
+          this.formError = err.error.message;
+        } else if (err.error?.errors?.length) {
+          this.formError = err.error.errors.join(', ');
+        } else {
+          this.formError = 'Erro ao conectar com o servidor';
+        }
+      }
+    });
+  }
+
+  searchCommunities(): void {
+    if (this.searchTerm.length < 2) {
+      this.searchResults = [];
+      return;
+    }
+    this.loadingSearch = true;
+    this.communityService.search(this.searchTerm).subscribe(r => {
+      this.loadingSearch = false;
+      if (r.success && r.data) {
+        this.searchResults = r.data;
+      }
+    });
+  }
+
+  selectCommunity(c: any): void {}
+
+  joinCommunity(communityId: string): void {
+    this.communityService.join({ communityId }).subscribe({
+      next: (r) => {
+        if (r.success) {
+          alert('Solicitação enviada! Aguarde aprovação do administrador.');
+          this.showSearch = false;
+          this.searchTerm = '';
+          this.searchResults = [];
+        } else {
+          alert(r.message || 'Erro ao solicitar entrada');
+        }
+      },
+      error: (err: HttpErrorResponse) => {
+        const msg = err.error?.message || 'Erro ao solicitar entrada';
+        alert(msg);
+      }
+    });
+  }
+
+  logout(): void {
+    this.authService.logout();
+    window.location.href = '/auth/login';
+  }
+}

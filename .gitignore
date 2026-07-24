@@ -1,0 +1,57 @@
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# Rider
+.idea/
+*.sln.iml
+
+# Node
+node_modules/
+dist/
+.angular/
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Environment
+appsettings.Development.json
+appsettings.Local.json
+*.env
+.env.local
+
+# Uploads
+wwwroot/uploads/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Coverage
+coverage/
