@@ -6,7 +6,7 @@ namespace Echurchs.Service.Interfaces;
 
 public interface IFinancialService
 {
-    Task<ApiResponseDto<List<GenericModuleResponseDto>>> GetAllTransactionsAsync(Guid communityId, string? userId, bool isAdmin);
+    Task<ApiResponseDto<List<GenericModuleResponseDto>>> GetAllTransactionsAsync(Guid communityId, string? userId, bool isAdmin, int? referenceMonth = null, int? referenceYear = null, string? filterUserId = null);
     Task<ApiResponseDto<GenericModuleResponseDto>> CreateTransactionAsync(GenericModuleRequestDto request, Guid communityId, Guid userId);
     Task<ApiResponseDto<GenericModuleResponseDto>> UpdateTransactionAsync(Guid id, GenericModuleRequestDto request, Guid communityId, Guid userId, bool isAdmin);
     Task<ApiResponseDto<bool>> DeleteTransactionAsync(Guid id, Guid communityId, Guid userId, bool isAdmin);
