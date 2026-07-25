@@ -64,10 +64,10 @@ import { GenericModuleItem, GenericModuleRequest } from '../../core/models/modul
         <div class="service-card card" *ngFor="let s of services">
           <div class="service-header">
             <div class="service-title-row">
-              <div class="live-dot" [class.live]="s.isActive"></div>
+              <div class="live-dot" [class.live]="isLive(s)"></div>
               <strong>{{ s.title }}</strong>
-              <span class="live-badge" [class]="s.isActive ? 'badge-live' : 'badge-ended'">
-                {{ s.isActive ? 'AO VIVO' : 'Encerrado' }}
+              <span class="live-badge" [class]="isLive(s) ? 'badge-live' : (isEnded(s) ? 'badge-ended' : 'badge-scheduled')">
+                {{ isLive(s) ? 'AO VIVO' : (isEnded(s) ? 'Encerrado' : 'Agendado') }}
               </span>
             </div>
             <span class="service-date">{{ s.startDate | date:'dd/MM/yyyy HH:mm' }}</span>
@@ -101,6 +101,8 @@ import { GenericModuleItem, GenericModuleRequest } from '../../core/models/modul
           </div>
 
           <div class="service-actions">
+            <button class="btn-go-live" *ngIf="!isLive(s) && !isEnded(s)" (click)="goLive(s)">Iniciar culto</button>
+            <button class="btn-end-live" *ngIf="isLive(s)" (click)="endLive(s)">Encerrar</button>
             <button class="btn-action" (click)="editService(s)" title="Editar">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
             </button>
@@ -164,6 +166,12 @@ import { GenericModuleItem, GenericModuleRequest } from '../../core/models/modul
     .live-badge { padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.5px; flex-shrink: 0; }
     .badge-live { background: #fce4e4; color: #e74c3c; }
     .badge-ended { background: #e2e3e5; color: #6c757d; }
+    .badge-scheduled { background: #e7f3ff; color: #1877f2; }
+
+    .btn-go-live { padding: 0.35rem 0.7rem; background: #e74c3c; color: white; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; margin-right: auto; }
+    .btn-go-live:hover { background: #d33d2c; }
+    .btn-end-live { padding: 0.35rem 0.7rem; background: #e4e6eb; color: #1c1e21; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; margin-right: auto; }
+    .btn-end-live:hover { background: #d8dadf; }
 
     .video-embed { margin-bottom: 0.75rem; }
     .embed-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px; background: #000; }
@@ -266,6 +274,29 @@ export class LiveComponent implements OnInit {
     if (confirm('Eliminar este culto online?')) {
       this.moduleService.delete('live-services', id).subscribe(() => this.loadServices());
     }
+  }
+
+  isLive(s: GenericModuleItem): boolean {
+    return s.metadata?.['status'] === 'Live';
+  }
+
+  isEnded(s: GenericModuleItem): boolean {
+    const status = s.metadata?.['status'];
+    return status === 'Ended' || status === 'Cancelled';
+  }
+
+  goLive(s: GenericModuleItem): void {
+    this.moduleService.update('live-services', s.id, { metadata: { status: 'Live' } }).subscribe({
+      next: () => this.loadServices(),
+      error: () => {}
+    });
+  }
+
+  endLive(s: GenericModuleItem): void {
+    this.moduleService.update('live-services', s.id, { metadata: { status: 'Ended' } }).subscribe({
+      next: () => this.loadServices(),
+      error: () => {}
+    });
   }
 
   onUrlChange(): void {

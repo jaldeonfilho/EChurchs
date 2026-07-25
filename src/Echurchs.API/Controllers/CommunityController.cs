@@ -53,7 +53,11 @@ public class CommunityController : ControllerBase
     public async Task<ActionResult<ApiResponseDto<bool>>> MembershipAction([FromBody] MembershipActionRequestDto request)
     {
         var result = await _communityService.HandleMembershipActionAsync(request, UserId);
-        if (!result.Success) return BadRequest(result);
+        if (!result.Success)
+        {
+            if (result.ErrorCode == "PLAN_LIMIT_EXCEEDED") return StatusCode(403, result);
+            return BadRequest(result);
+        }
         return Ok(result);
     }
 

@@ -5,7 +5,10 @@ public class Plan
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public decimal Price { get; set; }
-    public Echurchs.Models.Enums.BillingCycle BillingCycle { get; set; } = Echurchs.Models.Enums.BillingCycle.Monthly;
+    public decimal? PriceYearly { get; set; }
+    public string? StripeProductId { get; set; }
+    public string? StripePriceIdMonthly { get; set; }
+    public string? StripePriceIdYearly { get; set; }
     public string? Description { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
