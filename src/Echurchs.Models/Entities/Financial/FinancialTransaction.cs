@@ -9,9 +9,14 @@ public class FinancialTransaction
     public decimal Amount { get; set; }
     public DateTime TransactionDate { get; set; }
     public string? Description { get; set; }
+    public int ReferenceMonth { get; set; }
+    public int ReferenceYear { get; set; }
     public Echurchs.Models.Enums.TransactionType Type { get; set; }
     public Echurchs.Models.Enums.PaymentMethod? PaymentMethod { get; set; }
     public string? AttachmentUrl { get; set; }
+    public bool IsPaid { get; set; } = true;
+    public DateTime? DueDate { get; set; }
+    public string? ExpenseCategory { get; set; }
     public Guid CreatedBy { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

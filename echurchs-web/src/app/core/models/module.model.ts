@@ -14,6 +14,13 @@ export interface GenericModuleItem {
   startDate?: string;
   endDate?: string;
   location?: string;
+  referenceMonth?: number;
+  referenceYear?: number;
+  userId?: string;
+  userName?: string;
+  isPaid?: boolean;
+  dueDate?: string;
+  expenseCategory?: string;
   metadata?: { [key: string]: string };
 }
 
@@ -28,5 +35,9 @@ export interface GenericModuleRequest {
   startDate?: string;
   endDate?: string;
   location?: string;
+  referenceMonth?: number;
+  referenceYear?: number;
+  dueDate?: string;
+  expenseCategory?: string;
   metadata?: { [key: string]: string };
 }
