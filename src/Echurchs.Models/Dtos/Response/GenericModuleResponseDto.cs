@@ -12,10 +12,17 @@ public class GenericModuleResponseDto
     public string? Content { get; set; }
     public string? FileUrl { get; set; }
     public string? ImageUrl { get; set; }
+    public string? Location { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
-    public string? Location { get; set; }
+    public int? ReferenceMonth { get; set; }
+    public int? ReferenceYear { get; set; }
+    public string? UserId { get; set; }
+    public string? UserName { get; set; }
+    public bool? IsPaid { get; set; }
+    public DateTime? DueDate { get; set; }
+    public string? ExpenseCategory { get; set; }
     public Dictionary<string, string>? Metadata { get; set; }
 }

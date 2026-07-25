@@ -84,6 +84,10 @@ public class EchurchsDbContext : DbContext
             e.HasKey(p => p.Id);
             e.Property(p => p.Name).HasMaxLength(200).IsRequired();
             e.Property(p => p.Price).HasPrecision(18, 2);
+            e.Property(p => p.PriceYearly).HasPrecision(18, 2);
+            e.Property(p => p.StripeProductId).HasMaxLength(100);
+            e.Property(p => p.StripePriceIdMonthly).HasMaxLength(100);
+            e.Property(p => p.StripePriceIdYearly).HasMaxLength(100);
         });
 
         modelBuilder.Entity<PlanLimit>(e =>
@@ -110,6 +114,8 @@ public class EchurchsDbContext : DbContext
             e.HasOne(cs => cs.Community).WithOne(c => c.Subscription).HasForeignKey<CommunitySubscription>(cs => cs.CommunityId);
             e.HasOne(cs => cs.Plan).WithMany(p => p.CommunitySubscriptions).HasForeignKey(cs => cs.PlanId);
             e.Property(cs => cs.PaymentMethod).HasMaxLength(100);
+            e.Property(cs => cs.StripeCustomerId).HasMaxLength(100);
+            e.Property(cs => cs.StripeSubscriptionId).HasMaxLength(100);
         });
 
         modelBuilder.Entity<User>(e =>

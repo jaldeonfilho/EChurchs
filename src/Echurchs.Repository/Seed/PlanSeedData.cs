@@ -13,10 +13,10 @@ public static class PlanSeedData
         var diamondPlanId = Guid.Parse("44444444-4444-4444-4444-444444444444");
 
         modelBuilder.Entity<Plan>().HasData(
-            new Plan { Id = freePlanId, Name = "Free", Price = 0, Description = "Plano gratuito para igrejas pequenas", IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
-            new Plan { Id = silverPlanId, Name = "Prata", Price = 19, Description = "Plano Prata para igrejas em crescimento", IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
-            new Plan { Id = goldPlanId, Name = "Ouro", Price = 39, Description = "Plano Ouro para igrejas estabelecidas", IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
-            new Plan { Id = diamondPlanId, Name = "Diamante", Price = 69, Description = "Plano Diamante para grandes igrejas", IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) }
+            new Plan { Id = freePlanId, Name = "Free", Price = 0, PriceYearly = 0, Description = "Plano gratuito para igrejas pequenas", IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+            new Plan { Id = silverPlanId, Name = "Prata", Price = 19, PriceYearly = 190, Description = "Plano Prata para igrejas em crescimento", IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+            new Plan { Id = goldPlanId, Name = "Ouro", Price = 39, PriceYearly = 390, Description = "Plano Ouro para igrejas estabelecidas", IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+            new Plan { Id = diamondPlanId, Name = "Diamante", Price = 69, PriceYearly = 690, Description = "Plano Diamante para grandes igrejas", IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) }
         );
 
         var allLimits = BuildFreeLimits(freePlanId)
@@ -32,20 +32,24 @@ public static class PlanSeedData
     {
         return new List<PlanLimit>
         {
-            new() { Id = Guid.Parse("f0000001-0000-0000-0000-000000000001"), PlanId = planId, Module = "Pessoas", Feature = "MaxMembers", LimitValue = 30, Description = "Cadastre até 30 pessoas" },
+            new() { Id = Guid.Parse("f0000001-0000-0000-0000-000000000001"), PlanId = planId, Module = "Pessoas", Feature = "MaxMembers", LimitValue = 15, Description = "Cadastre até 15 pessoas" },
             new() { Id = Guid.Parse("f0000001-0000-0000-0000-000000000002"), PlanId = planId, Module = "Pessoas", Feature = "CustomFields", LimitValue = 3, Description = "3 Campos adicionais" },
-            new() { Id = Guid.Parse("f0000001-0000-0000-0000-000000000003"), PlanId = planId, Module = "Grupos", Feature = "MaxGroups", LimitValue = 5, Description = "Cadastre até 5 grupos" },
-            new() { Id = Guid.Parse("f0000001-0000-0000-0000-000000000004"), PlanId = planId, Module = "Agenda", Feature = "MaxBulletins", LimitValue = 3, Description = "Cadastre 3 itens no quadro de avisos" },
+            new() { Id = Guid.Parse("f0000001-0000-0000-0000-000000000003"), PlanId = planId, Module = "Grupos", Feature = "MaxGroups", LimitValue = 2, Description = "Cadastre até 2 grupos" },
+            new() { Id = Guid.Parse("f0000001-0000-0000-0000-000000000004"), PlanId = planId, Module = "Agenda", Feature = "MaxBulletins", LimitValue = 2, Description = "Cadastre 2 itens no quadro de avisos" },
             new() { Id = Guid.Parse("f0000001-0000-0000-0000-000000000005"), PlanId = planId, Module = "Mídias", Feature = "MaxPhotoAlbums", LimitValue = 3, Description = "Cadastre até 3 álbuns de fotos" },
             new() { Id = Guid.Parse("f0000001-0000-0000-0000-000000000006"), PlanId = planId, Module = "Mídias", Feature = "MaxVideoAlbums", LimitValue = 3, Description = "Cadastre até 3 álbuns de vídeos" },
             new() { Id = Guid.Parse("f0000001-0000-0000-0000-000000000007"), PlanId = planId, Module = "Mídias", Feature = "MaxItemsPerAlbum", LimitValue = 20, Description = "Até 20 itens em cada álbum" },
-            new() { Id = Guid.Parse("f0000001-0000-0000-0000-000000000008"), PlanId = planId, Module = "Mídias", Feature = "MaxDocuments", LimitValue = 3, Description = "Até 3 Documentos personalizados" },
+            new() { Id = Guid.Parse("f0000001-0000-0000-0000-000000000008"), PlanId = planId, Module = "Mídias", Feature = "MaxDocuments", LimitValue = 10, Description = "Até 10 Documentos personalizados" },
             new() { Id = Guid.Parse("f0000001-0000-0000-0000-000000000009"), PlanId = planId, Module = "Mídias", Feature = "MaxForms", LimitValue = 3, Description = "Crie até 3 formulários" },
             new() { Id = Guid.Parse("f0000001-0000-0000-0000-000000000010"), PlanId = planId, Module = "Mídias", Feature = "MaxFormFields", LimitValue = 6, Description = "Crie até 6 campos personalizados em formulários" },
             new() { Id = Guid.Parse("f0000001-0000-0000-0000-000000000011"), PlanId = planId, Module = "Mídias", Feature = "StorageMB", LimitValue = 500, Description = "500MB de armazenamento" },
             new() { Id = Guid.Parse("f0000001-0000-0000-0000-000000000012"), PlanId = planId, Module = "Financeiro", Feature = "MaxTransactionsPerMonth", LimitValue = 50, Description = "Cadastre até 50 transações no mês" },
             new() { Id = Guid.Parse("f0000001-0000-0000-0000-000000000013"), PlanId = planId, Module = "Ensino", Feature = "MaxStudies", LimitValue = 10, Description = "Cadastre até 10 estudos" },
             new() { Id = Guid.Parse("f0000001-0000-0000-0000-000000000014"), PlanId = planId, Module = "Ensino", Feature = "MaxClasses", LimitValue = 2, Description = "Cadastre até 2 turmas" },
+            new() { Id = Guid.Parse("f0000001-0000-0000-0000-000000000015"), PlanId = planId, Module = "Eventos", Feature = "MaxEvents", LimitValue = 2, Description = "Cadastre até 2 eventos" },
+            new() { Id = Guid.Parse("f0000001-0000-0000-0000-000000000016"), PlanId = planId, Module = "Live", Feature = "MaxConcurrentLiveServices", LimitValue = 1, Description = "1 culto ao vivo por vez" },
+            new() { Id = Guid.Parse("f0000001-0000-0000-0000-000000000017"), PlanId = planId, Module = "Mídias", Feature = "MaxPhotos", LimitValue = 5, Description = "Até 5 fotos no total" },
+            new() { Id = Guid.Parse("f0000001-0000-0000-0000-000000000018"), PlanId = planId, Module = "Mídias", Feature = "MaxVideos", LimitValue = 2, Description = "Até 2 vídeos no total" },
         };
     }
 
@@ -67,6 +71,10 @@ public static class PlanSeedData
             new() { Id = Guid.Parse("f0000002-0000-0000-0000-000000000012"), PlanId = planId, Module = "Financeiro", Feature = "MaxTransactionsPerMonth", LimitValue = -1, Description = "Cadastro ilimitado de transações no mês" },
             new() { Id = Guid.Parse("f0000002-0000-0000-0000-000000000013"), PlanId = planId, Module = "Ensino", Feature = "MaxStudies", LimitValue = 50, Description = "Cadastre até 50 estudos" },
             new() { Id = Guid.Parse("f0000002-0000-0000-0000-000000000014"), PlanId = planId, Module = "Ensino", Feature = "MaxClasses", LimitValue = 30, Description = "Cadastre até 30 turmas" },
+            new() { Id = Guid.Parse("f0000002-0000-0000-0000-000000000015"), PlanId = planId, Module = "Eventos", Feature = "MaxEvents", LimitValue = 15, Description = "Cadastre até 15 eventos" },
+            new() { Id = Guid.Parse("f0000002-0000-0000-0000-000000000016"), PlanId = planId, Module = "Live", Feature = "MaxConcurrentLiveServices", LimitValue = 2, Description = "2 cultos ao vivo em simultâneo" },
+            new() { Id = Guid.Parse("f0000002-0000-0000-0000-000000000017"), PlanId = planId, Module = "Mídias", Feature = "MaxPhotos", LimitValue = 100, Description = "Até 100 fotos no total" },
+            new() { Id = Guid.Parse("f0000002-0000-0000-0000-000000000018"), PlanId = planId, Module = "Mídias", Feature = "MaxVideos", LimitValue = 30, Description = "Até 30 vídeos no total" },
         };
     }
 
@@ -88,6 +96,10 @@ public static class PlanSeedData
             new() { Id = Guid.Parse("f0000003-0000-0000-0000-000000000012"), PlanId = planId, Module = "Financeiro", Feature = "MaxTransactionsPerMonth", LimitValue = -1, Description = "Cadastro ilimitado de transações no mês" },
             new() { Id = Guid.Parse("f0000003-0000-0000-0000-000000000013"), PlanId = planId, Module = "Ensino", Feature = "MaxStudies", LimitValue = -1, Description = "Cadastro ilimitado de estudos" },
             new() { Id = Guid.Parse("f0000003-0000-0000-0000-000000000014"), PlanId = planId, Module = "Ensino", Feature = "MaxClasses", LimitValue = 50, Description = "Cadastre até 50 turmas" },
+            new() { Id = Guid.Parse("f0000003-0000-0000-0000-000000000015"), PlanId = planId, Module = "Eventos", Feature = "MaxEvents", LimitValue = 40, Description = "Cadastre até 40 eventos" },
+            new() { Id = Guid.Parse("f0000003-0000-0000-0000-000000000016"), PlanId = planId, Module = "Live", Feature = "MaxConcurrentLiveServices", LimitValue = 3, Description = "3 cultos ao vivo em simultâneo" },
+            new() { Id = Guid.Parse("f0000003-0000-0000-0000-000000000017"), PlanId = planId, Module = "Mídias", Feature = "MaxPhotos", LimitValue = 300, Description = "Até 300 fotos no total" },
+            new() { Id = Guid.Parse("f0000003-0000-0000-0000-000000000018"), PlanId = planId, Module = "Mídias", Feature = "MaxVideos", LimitValue = 100, Description = "Até 100 vídeos no total" },
         };
     }
 
@@ -109,6 +121,10 @@ public static class PlanSeedData
             new() { Id = Guid.Parse("f0000004-0000-0000-0000-000000000012"), PlanId = planId, Module = "Financeiro", Feature = "MaxTransactionsPerMonth", LimitValue = -1, Description = "Cadastro ilimitado de transações no mês" },
             new() { Id = Guid.Parse("f0000004-0000-0000-0000-000000000013"), PlanId = planId, Module = "Ensino", Feature = "MaxStudies", LimitValue = -1, Description = "Cadastro ilimitado de estudos" },
             new() { Id = Guid.Parse("f0000004-0000-0000-0000-000000000014"), PlanId = planId, Module = "Ensino", Feature = "MaxClasses", LimitValue = -1, Description = "Cadastro ilimitado de turmas" },
+            new() { Id = Guid.Parse("f0000004-0000-0000-0000-000000000015"), PlanId = planId, Module = "Eventos", Feature = "MaxEvents", LimitValue = -1, Description = "Cadastro ilimitado de eventos" },
+            new() { Id = Guid.Parse("f0000004-0000-0000-0000-000000000016"), PlanId = planId, Module = "Live", Feature = "MaxConcurrentLiveServices", LimitValue = -1, Description = "Cultos ao vivo em simultâneo ilimitados" },
+            new() { Id = Guid.Parse("f0000004-0000-0000-0000-000000000017"), PlanId = planId, Module = "Mídias", Feature = "MaxPhotos", LimitValue = -1, Description = "Fotos ilimitadas" },
+            new() { Id = Guid.Parse("f0000004-0000-0000-0000-000000000018"), PlanId = planId, Module = "Mídias", Feature = "MaxVideos", LimitValue = -1, Description = "Vídeos ilimitados" },
         };
     }
 }

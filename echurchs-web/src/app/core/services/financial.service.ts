@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { GenericModuleItem, GenericModuleRequest } from '../models/module.model';
 import { ApiResponse } from '../models/api-response.model';
 import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
+import { MembershipResponse } from '../models/community.model';
 
 @Injectable({ providedIn: 'root' })
 export class FinancialService {
@@ -16,12 +17,20 @@ export class FinancialService {
     return this.auth.currentCommunityId ?? '';
   }
 
-  getTransactions(): Observable<ApiResponse<GenericModuleItem[]>> {
-    return this.http.get<ApiResponse<GenericModuleItem[]>>(`${this.apiUrl}/${this.communityId}/financial`);
+  getTransactions(referenceMonth?: number, referenceYear?: number, memberId?: string): Observable<ApiResponse<GenericModuleItem[]>> {
+    let params = new HttpParams();
+    if (referenceMonth !== undefined) params = params.set('referenceMonth', referenceMonth.toString());
+    if (referenceYear !== undefined) params = params.set('referenceYear', referenceYear.toString());
+    if (memberId) params = params.set('filterUserId', memberId);
+    return this.http.get<ApiResponse<GenericModuleItem[]>>(`${this.apiUrl}/${this.communityId}/financial`, { params });
   }
 
   getPersonalDonations(): Observable<ApiResponse<GenericModuleItem[]>> {
     return this.http.get<ApiResponse<GenericModuleItem[]>>(`${this.apiUrl}/${this.communityId}/personal/donations`);
+  }
+
+  getMembersList(): Observable<ApiResponse<MembershipResponse[]>> {
+    return this.http.get<ApiResponse<MembershipResponse[]>>(`${this.apiUrl}/${this.communityId}/members/list`);
   }
 
   createTransaction(request: GenericModuleRequest): Observable<ApiResponse<GenericModuleItem>> {

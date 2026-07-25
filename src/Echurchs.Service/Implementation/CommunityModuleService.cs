@@ -9,10 +9,22 @@ namespace Echurchs.Service.Implementation;
 public class CommunityModuleService : ICommunityModuleService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IPlanLimitService _planLimitService;
 
-    public CommunityModuleService(IUnitOfWork unitOfWork)
+    private static readonly Dictionary<string, (string Module, string Feature)> _limitMap = new()
+    {
+        ["groups"] = ("Grupos", "MaxGroups"),
+        ["events"] = ("Eventos", "MaxEvents"),
+        ["bulletins"] = ("Agenda", "MaxBulletins"),
+        ["documents"] = ("Mídias", "MaxDocuments"),
+        ["photos"] = ("Mídias", "MaxPhotos"),
+        ["videos"] = ("Mídias", "MaxVideos"),
+    };
+
+    public CommunityModuleService(IUnitOfWork unitOfWork, IPlanLimitService planLimitService)
     {
         _unitOfWork = unitOfWork;
+        _planLimitService = planLimitService;
     }
 
     public async Task<ApiResponseDto<List<GenericModuleResponseDto>>> GetAllAsync(Guid communityId, string module)
@@ -205,6 +217,15 @@ public class CommunityModuleService : ICommunityModuleService
 
     public async Task<ApiResponseDto<GenericModuleResponseDto>> CreateAsync(GenericModuleRequestDto request, Guid communityId, Guid userId, string module)
     {
+        if (_limitMap.TryGetValue(module.ToLower(), out var limitKey))
+        {
+            var check = await _planLimitService.CheckLimitAsync(communityId, limitKey.Module, limitKey.Feature);
+            if (!check.Allowed)
+                return ApiResponseDto<GenericModuleResponseDto>.ErrorResponse(
+                    $"Limite do plano {check.PlanName} atingido ({check.CurrentUsage}/{check.LimitValue}). Faça upgrade para continuar.",
+                    errorCode: "PLAN_LIMIT_EXCEEDED");
+        }
+
         switch (module.ToLower())
         {
             case "groups":
@@ -450,6 +471,19 @@ public class CommunityModuleService : ICommunityModuleService
                 ls.Description = request.Description ?? ls.Description;
                 ls.ScheduledDate = request.StartDate ?? ls.ScheduledDate;
                 ls.StreamUrl = request.Location ?? request.FileUrl ?? ls.StreamUrl;
+                if (request.Metadata != null && request.Metadata.TryGetValue("status", out var newStatusStr)
+                    && Enum.TryParse<Models.Enums.LiveServiceStatus>(newStatusStr, out var newStatus))
+                {
+                    if (newStatus == Models.Enums.LiveServiceStatus.Live && ls.Status != Models.Enums.LiveServiceStatus.Live)
+                    {
+                        var liveCheck = await _planLimitService.CheckLimitAsync(communityId, "Live", "MaxConcurrentLiveServices");
+                        if (!liveCheck.Allowed)
+                            return ApiResponseDto<GenericModuleResponseDto>.ErrorResponse(
+                                $"Limite do plano {liveCheck.PlanName} atingido ({liveCheck.CurrentUsage}/{liveCheck.LimitValue}). Faça upgrade para continuar.",
+                                errorCode: "PLAN_LIMIT_EXCEEDED");
+                    }
+                    ls.Status = newStatus;
+                }
                 break;
             default:
                 return ApiResponseDto<GenericModuleResponseDto>.ErrorResponse("Módulo não suportado para atualização");

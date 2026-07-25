@@ -28,6 +28,7 @@ export const routes: Routes = [
       { path: 'donations', loadComponent: () => import('./features/donations/donations.component').then(m => m.DonationsComponent) },
       { path: 'messages', loadComponent: () => import('./features/messages/messages.component').then(m => m.MessagesComponent) },
       { path: 'friends', loadComponent: () => import('./features/friends/friends.component').then(m => m.FriendsComponent) },
+      { path: 'billing', loadComponent: () => import('./features/billing/billing.component').then(m => m.BillingComponent) },
       { path: 'settings', loadComponent: () => import('./features/settings/settings.component').then(m => m.SettingsComponent) },
       { path: '', redirectTo: 'feed', pathMatch: 'full' }
     ]

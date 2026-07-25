@@ -1,15 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { CommunityService } from '../../core/services/community.service';
+import { BillingService } from '../../core/services/billing.service';
 import { MembershipResponse } from '../../core/models/community.model';
 import { UpdateProfileRequest } from '../../core/models/user.model';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   template: `
     <div class="settings-page">
       <div class="page-header card">
@@ -113,6 +115,7 @@ import { UpdateProfileRequest } from '../../core/models/user.model';
           <label>Plano</label>
           <span>{{ planName }}</span>
         </div>
+        <a routerLink="/billing" class="billing-link">Ver planos e faturação →</a>
       </div>
 
       <!-- Leave Community -->
@@ -236,6 +239,8 @@ import { UpdateProfileRequest } from '../../core/models/user.model';
     .community-detail label { font-size: 0.85rem; color: #65676b; }
     .community-detail span { font-weight: 500; }
     .role-badge { background: #e7f3ff; color: #1877f2; padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.8rem; font-weight: 600; }
+    .billing-link { display: inline-block; margin-top: 0.75rem; font-size: 0.85rem; color: #1877f2; text-decoration: none; font-weight: 500; }
+    .billing-link:hover { text-decoration: underline; }
     .danger-zone { border: 1px solid #fce4e4; }
     .danger-zone h3 { color: #e74c3c; }
     .danger-zone p { font-size: 0.85rem; color: #65676b; margin-bottom: 0.75rem; }
@@ -279,7 +284,8 @@ export class SettingsComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private communityService: CommunityService
+    private communityService: CommunityService,
+    private billingService: BillingService
   ) {}
 
   ngOnInit(): void {
@@ -303,6 +309,14 @@ export class SettingsComponent implements OnInit {
     }
     this.communityName = this.authService.currentCommunityName ?? '';
     this.loadPending();
+    this.loadPlan();
+  }
+
+  loadPlan(): void {
+    if (!this.authService.currentCommunityId) return;
+    this.billingService.getUsage().subscribe(r => {
+      if (r.success && r.data) this.planName = r.data.planName;
+    });
   }
 
   loadPending(): void {

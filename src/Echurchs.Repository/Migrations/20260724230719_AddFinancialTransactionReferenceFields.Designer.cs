@@ -4,6 +4,7 @@ using Echurchs.Repository.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Echurchs.Repository.Migrations
 {
     [DbContext(typeof(EchurchsDbContext))]
-    partial class EchurchsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260724230719_AddFinancialTransactionReferenceFields")]
+    partial class AddFinancialTransactionReferenceFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -371,19 +374,10 @@ namespace Echurchs.Repository.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("BillingCycle")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("CancelAtPeriodEnd")
-                        .HasColumnType("bit");
-
                     b.Property<Guid>("CommunityId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("CurrentPeriodEnd")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("EndDate")
@@ -402,14 +396,6 @@ namespace Echurchs.Repository.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<string>("StripeCustomerId")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("StripeSubscriptionId")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CommunityId")
@@ -425,6 +411,9 @@ namespace Echurchs.Repository.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("BillingCycle")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -444,22 +433,6 @@ namespace Echurchs.Repository.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal?>("PriceYearly")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("StripePriceIdMonthly")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("StripePriceIdYearly")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("StripeProductId")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.HasKey("Id");
 
                     b.ToTable("Plans");
@@ -468,42 +441,42 @@ namespace Echurchs.Repository.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111111"),
+                            BillingCycle = 0,
                             CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Plano gratuito para igrejas pequenas",
                             IsActive = true,
                             Name = "Free",
-                            Price = 0m,
-                            PriceYearly = 0m
+                            Price = 0m
                         },
                         new
                         {
                             Id = new Guid("22222222-2222-2222-2222-222222222222"),
+                            BillingCycle = 0,
                             CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Plano Prata para igrejas em crescimento",
                             IsActive = true,
                             Name = "Prata",
-                            Price = 19m,
-                            PriceYearly = 190m
+                            Price = 19m
                         },
                         new
                         {
                             Id = new Guid("33333333-3333-3333-3333-333333333333"),
+                            BillingCycle = 0,
                             CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Plano Ouro para igrejas estabelecidas",
                             IsActive = true,
                             Name = "Ouro",
-                            Price = 39m,
-                            PriceYearly = 390m
+                            Price = 39m
                         },
                         new
                         {
                             Id = new Guid("44444444-4444-4444-4444-444444444444"),
+                            BillingCycle = 0,
                             CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Plano Diamante para grandes igrejas",
                             IsActive = true,
                             Name = "Diamante",
-                            Price = 69m,
-                            PriceYearly = 690m
+                            Price = 69m
                         });
                 });
 
@@ -542,9 +515,9 @@ namespace Echurchs.Repository.Migrations
                         new
                         {
                             Id = new Guid("f0000001-0000-0000-0000-000000000001"),
-                            Description = "Cadastre até 15 pessoas",
+                            Description = "Cadastre até 30 pessoas",
                             Feature = "MaxMembers",
-                            LimitValue = 15,
+                            LimitValue = 30,
                             Module = "Pessoas",
                             PlanId = new Guid("11111111-1111-1111-1111-111111111111")
                         },
@@ -560,18 +533,18 @@ namespace Echurchs.Repository.Migrations
                         new
                         {
                             Id = new Guid("f0000001-0000-0000-0000-000000000003"),
-                            Description = "Cadastre até 2 grupos",
+                            Description = "Cadastre até 5 grupos",
                             Feature = "MaxGroups",
-                            LimitValue = 2,
+                            LimitValue = 5,
                             Module = "Grupos",
                             PlanId = new Guid("11111111-1111-1111-1111-111111111111")
                         },
                         new
                         {
                             Id = new Guid("f0000001-0000-0000-0000-000000000004"),
-                            Description = "Cadastre 2 itens no quadro de avisos",
+                            Description = "Cadastre 3 itens no quadro de avisos",
                             Feature = "MaxBulletins",
-                            LimitValue = 2,
+                            LimitValue = 3,
                             Module = "Agenda",
                             PlanId = new Guid("11111111-1111-1111-1111-111111111111")
                         },
@@ -605,9 +578,9 @@ namespace Echurchs.Repository.Migrations
                         new
                         {
                             Id = new Guid("f0000001-0000-0000-0000-000000000008"),
-                            Description = "Até 10 Documentos personalizados",
+                            Description = "Até 3 Documentos personalizados",
                             Feature = "MaxDocuments",
-                            LimitValue = 10,
+                            LimitValue = 3,
                             Module = "Mídias",
                             PlanId = new Guid("11111111-1111-1111-1111-111111111111")
                         },
@@ -663,42 +636,6 @@ namespace Echurchs.Repository.Migrations
                             Feature = "MaxClasses",
                             LimitValue = 2,
                             Module = "Ensino",
-                            PlanId = new Guid("11111111-1111-1111-1111-111111111111")
-                        },
-                        new
-                        {
-                            Id = new Guid("f0000001-0000-0000-0000-000000000015"),
-                            Description = "Cadastre até 2 eventos",
-                            Feature = "MaxEvents",
-                            LimitValue = 2,
-                            Module = "Eventos",
-                            PlanId = new Guid("11111111-1111-1111-1111-111111111111")
-                        },
-                        new
-                        {
-                            Id = new Guid("f0000001-0000-0000-0000-000000000016"),
-                            Description = "1 culto ao vivo por vez",
-                            Feature = "MaxConcurrentLiveServices",
-                            LimitValue = 1,
-                            Module = "Live",
-                            PlanId = new Guid("11111111-1111-1111-1111-111111111111")
-                        },
-                        new
-                        {
-                            Id = new Guid("f0000001-0000-0000-0000-000000000017"),
-                            Description = "Até 5 fotos no total",
-                            Feature = "MaxPhotos",
-                            LimitValue = 5,
-                            Module = "Mídias",
-                            PlanId = new Guid("11111111-1111-1111-1111-111111111111")
-                        },
-                        new
-                        {
-                            Id = new Guid("f0000001-0000-0000-0000-000000000018"),
-                            Description = "Até 2 vídeos no total",
-                            Feature = "MaxVideos",
-                            LimitValue = 2,
-                            Module = "Mídias",
                             PlanId = new Guid("11111111-1111-1111-1111-111111111111")
                         },
                         new
@@ -829,42 +766,6 @@ namespace Echurchs.Repository.Migrations
                         },
                         new
                         {
-                            Id = new Guid("f0000002-0000-0000-0000-000000000015"),
-                            Description = "Cadastre até 15 eventos",
-                            Feature = "MaxEvents",
-                            LimitValue = 15,
-                            Module = "Eventos",
-                            PlanId = new Guid("22222222-2222-2222-2222-222222222222")
-                        },
-                        new
-                        {
-                            Id = new Guid("f0000002-0000-0000-0000-000000000016"),
-                            Description = "2 cultos ao vivo em simultâneo",
-                            Feature = "MaxConcurrentLiveServices",
-                            LimitValue = 2,
-                            Module = "Live",
-                            PlanId = new Guid("22222222-2222-2222-2222-222222222222")
-                        },
-                        new
-                        {
-                            Id = new Guid("f0000002-0000-0000-0000-000000000017"),
-                            Description = "Até 100 fotos no total",
-                            Feature = "MaxPhotos",
-                            LimitValue = 100,
-                            Module = "Mídias",
-                            PlanId = new Guid("22222222-2222-2222-2222-222222222222")
-                        },
-                        new
-                        {
-                            Id = new Guid("f0000002-0000-0000-0000-000000000018"),
-                            Description = "Até 30 vídeos no total",
-                            Feature = "MaxVideos",
-                            LimitValue = 30,
-                            Module = "Mídias",
-                            PlanId = new Guid("22222222-2222-2222-2222-222222222222")
-                        },
-                        new
-                        {
                             Id = new Guid("f0000003-0000-0000-0000-000000000001"),
                             Description = "Cadastre até 500 pessoas",
                             Feature = "MaxMembers",
@@ -991,42 +892,6 @@ namespace Echurchs.Repository.Migrations
                         },
                         new
                         {
-                            Id = new Guid("f0000003-0000-0000-0000-000000000015"),
-                            Description = "Cadastre até 40 eventos",
-                            Feature = "MaxEvents",
-                            LimitValue = 40,
-                            Module = "Eventos",
-                            PlanId = new Guid("33333333-3333-3333-3333-333333333333")
-                        },
-                        new
-                        {
-                            Id = new Guid("f0000003-0000-0000-0000-000000000016"),
-                            Description = "3 cultos ao vivo em simultâneo",
-                            Feature = "MaxConcurrentLiveServices",
-                            LimitValue = 3,
-                            Module = "Live",
-                            PlanId = new Guid("33333333-3333-3333-3333-333333333333")
-                        },
-                        new
-                        {
-                            Id = new Guid("f0000003-0000-0000-0000-000000000017"),
-                            Description = "Até 300 fotos no total",
-                            Feature = "MaxPhotos",
-                            LimitValue = 300,
-                            Module = "Mídias",
-                            PlanId = new Guid("33333333-3333-3333-3333-333333333333")
-                        },
-                        new
-                        {
-                            Id = new Guid("f0000003-0000-0000-0000-000000000018"),
-                            Description = "Até 100 vídeos no total",
-                            Feature = "MaxVideos",
-                            LimitValue = 100,
-                            Module = "Mídias",
-                            PlanId = new Guid("33333333-3333-3333-3333-333333333333")
-                        },
-                        new
-                        {
                             Id = new Guid("f0000004-0000-0000-0000-000000000001"),
                             Description = "Cadastre até 1000 pessoas",
                             Feature = "MaxMembers",
@@ -1149,42 +1014,6 @@ namespace Echurchs.Repository.Migrations
                             Feature = "MaxClasses",
                             LimitValue = -1,
                             Module = "Ensino",
-                            PlanId = new Guid("44444444-4444-4444-4444-444444444444")
-                        },
-                        new
-                        {
-                            Id = new Guid("f0000004-0000-0000-0000-000000000015"),
-                            Description = "Cadastro ilimitado de eventos",
-                            Feature = "MaxEvents",
-                            LimitValue = -1,
-                            Module = "Eventos",
-                            PlanId = new Guid("44444444-4444-4444-4444-444444444444")
-                        },
-                        new
-                        {
-                            Id = new Guid("f0000004-0000-0000-0000-000000000016"),
-                            Description = "Cultos ao vivo em simultâneo ilimitados",
-                            Feature = "MaxConcurrentLiveServices",
-                            LimitValue = -1,
-                            Module = "Live",
-                            PlanId = new Guid("44444444-4444-4444-4444-444444444444")
-                        },
-                        new
-                        {
-                            Id = new Guid("f0000004-0000-0000-0000-000000000017"),
-                            Description = "Fotos ilimitadas",
-                            Feature = "MaxPhotos",
-                            LimitValue = -1,
-                            Module = "Mídias",
-                            PlanId = new Guid("44444444-4444-4444-4444-444444444444")
-                        },
-                        new
-                        {
-                            Id = new Guid("f0000004-0000-0000-0000-000000000018"),
-                            Description = "Vídeos ilimitados",
-                            Feature = "MaxVideos",
-                            LimitValue = -1,
-                            Module = "Mídias",
                             PlanId = new Guid("44444444-4444-4444-4444-444444444444")
                         });
                 });

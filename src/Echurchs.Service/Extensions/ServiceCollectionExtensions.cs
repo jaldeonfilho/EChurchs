@@ -25,6 +25,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICommunityModuleService, CommunityModuleService>();
         services.AddScoped<IFinancialService, FinancialService>();
         services.AddScoped<IMessagingService, MessagingService>();
+        services.AddScoped<IStripeService, StripeService>();
+        services.AddScoped<ISubscriptionService, SubscriptionService>();
+        services.AddScoped<IPlanLimitService, PlanLimitService>();
 
         return services;
     }

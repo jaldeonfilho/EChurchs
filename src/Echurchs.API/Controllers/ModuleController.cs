@@ -27,12 +27,16 @@ public class ModuleController : ControllerBase
     }
 
     [HttpGet("{communityId}/{module}")]
-    public async Task<ActionResult<ApiResponseDto<List<GenericModuleResponseDto>>>> GetAll(Guid communityId, string module)
+    public async Task<ActionResult<ApiResponseDto<List<GenericModuleResponseDto>>>> GetAll(
+        Guid communityId, string module,
+        [FromQuery] int? referenceMonth = null,
+        [FromQuery] int? referenceYear = null,
+        [FromQuery] string? filterUserId = null)
     {
         if (module.ToLower() == "financial")
         {
             var isAdmin = await IsAdminOrFinancialManager(UserId, communityId);
-            return Ok(await _financialService.GetAllTransactionsAsync(communityId, UserId.ToString(), isAdmin));
+            return Ok(await _financialService.GetAllTransactionsAsync(communityId, UserId.ToString(), isAdmin, referenceMonth, referenceYear, filterUserId));
         }
         return Ok(await _moduleService.GetAllAsync(communityId, module));
     }
@@ -47,7 +51,11 @@ public class ModuleController : ControllerBase
     public async Task<ActionResult<ApiResponseDto<GenericModuleResponseDto>>> Create(Guid communityId, string module, [FromBody] GenericModuleRequestDto request)
     {
         var result = await _moduleService.CreateAsync(request, communityId, UserId, module);
-        if (!result.Success) return BadRequest(result);
+        if (!result.Success)
+        {
+            if (result.ErrorCode == "PLAN_LIMIT_EXCEEDED") return StatusCode(403, result);
+            return BadRequest(result);
+        }
         return Ok(result);
     }
 
@@ -71,6 +79,34 @@ public class ModuleController : ControllerBase
     public async Task<ActionResult<ApiResponseDto<List<GenericModuleResponseDto>>>> GetPersonalDonations(Guid communityId)
     {
         return Ok(await _financialService.GetPersonalDonationsAsync(communityId, UserId));
+    }
+
+    [HttpGet("{communityId}/members/list")]
+    public async Task<ActionResult<ApiResponseDto<List<MembershipResponseDto>>>> GetMembersList(Guid communityId)
+    {
+        var isAdmin = await IsAdminOrFinancialManager(UserId, communityId);
+        if (!isAdmin) return Forbid();
+
+        var memberships = (await _unitOfWork.CommunityMemberships.FindAsync(
+            m => m.CommunityId == communityId && m.Status == Models.Enums.MembershipStatus.Active)).ToList();
+
+        var result = new List<MembershipResponseDto>();
+        foreach (var m in memberships)
+        {
+            var user = await _unitOfWork.Users.GetByIdAsync(m.UserId);
+            result.Add(new MembershipResponseDto
+            {
+                Id = m.Id,
+                UserId = m.UserId,
+                UserName = user?.Name ?? string.Empty,
+                UserEmail = user?.Email,
+                Role = m.Role.ToString(),
+                Status = m.Status.ToString(),
+                CreatedAt = m.CreatedAt
+            });
+        }
+
+        return Ok(ApiResponseDto<List<MembershipResponseDto>>.SuccessResponse(result));
     }
 
     [HttpPost("{communityId}/financial/transaction")]

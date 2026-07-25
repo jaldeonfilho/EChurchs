@@ -16,5 +16,9 @@ public class GenericModuleRequestDto
     public string? FileUrl { get; set; }
     public string? ImageUrl { get; set; }
     public bool? IsActive { get; set; }
+    public int? ReferenceMonth { get; set; }
+    public int? ReferenceYear { get; set; }
+    public DateTime? DueDate { get; set; }
+    public string? ExpenseCategory { get; set; }
     public Dictionary<string, string>? Metadata { get; set; }
 }
