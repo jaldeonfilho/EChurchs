@@ -51,7 +51,11 @@ public class ModuleController : ControllerBase
     public async Task<ActionResult<ApiResponseDto<GenericModuleResponseDto>>> Create(Guid communityId, string module, [FromBody] GenericModuleRequestDto request)
     {
         var result = await _moduleService.CreateAsync(request, communityId, UserId, module);
-        if (!result.Success) return BadRequest(result);
+        if (!result.Success)
+        {
+            if (result.ErrorCode == "PLAN_LIMIT_EXCEEDED") return StatusCode(403, result);
+            return BadRequest(result);
+        }
         return Ok(result);
     }
 

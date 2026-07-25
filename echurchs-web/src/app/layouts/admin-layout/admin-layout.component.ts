@@ -149,6 +149,10 @@ import { CommunityService } from '../../core/services/community.service';
               <span class="nav-icon">💝</span>
               <span>Doações</span>
             </a>
+            <a routerLink="/billing" routerLinkActive="active" class="nav-item">
+              <span class="nav-icon">💳</span>
+              <span>Faturação</span>
+            </a>
 
             <div class="nav-divider"></div>
             <div class="nav-section-title">Comunicação</div>
@@ -183,6 +187,7 @@ import { CommunityService } from '../../core/services/community.service';
           <div class="sidebar-card">
             <h4>Meu Plano</h4>
             <p class="plan-name">{{ planName || 'Free' }}</p>
+            <a routerLink="/billing" class="btn-upgrade">Fazer upgrade</a>
           </div>
         </aside>
       </div>
@@ -511,6 +516,18 @@ import { CommunityService } from '../../core/services/community.service';
       font-weight: 600;
       color: #1877f2;
     }
+    .btn-upgrade {
+      display: inline-block;
+      margin-top: 0.5rem;
+      padding: 0.35rem 0.8rem;
+      background: #1877f2;
+      color: white;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .btn-upgrade:hover { background: #166fe5; }
 
     /* Responsive */
     @media (max-width: 1200px) {

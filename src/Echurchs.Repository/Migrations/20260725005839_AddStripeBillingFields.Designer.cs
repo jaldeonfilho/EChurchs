@@ -4,6 +4,7 @@ using Echurchs.Repository.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Echurchs.Repository.Migrations
 {
     [DbContext(typeof(EchurchsDbContext))]
-    partial class EchurchsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260725005839_AddStripeBillingFields")]
+    partial class AddStripeBillingFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1468,22 +1471,7 @@ namespace Echurchs.Repository.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<DateTime?>("DueDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ExpenseCategory")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsPaid")
-                        .HasColumnType("bit");
-
                     b.Property<int?>("PaymentMethod")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ReferenceMonth")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ReferenceYear")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("TransactionDate")

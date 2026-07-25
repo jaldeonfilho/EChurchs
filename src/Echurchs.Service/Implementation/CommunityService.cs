@@ -10,10 +10,12 @@ namespace Echurchs.Service.Implementation;
 public class CommunityService : ICommunityService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IPlanLimitService _planLimitService;
 
-    public CommunityService(IUnitOfWork unitOfWork)
+    public CommunityService(IUnitOfWork unitOfWork, IPlanLimitService planLimitService)
     {
         _unitOfWork = unitOfWork;
+        _planLimitService = planLimitService;
     }
 
     public async Task<ApiResponseDto<CommunityResponseDto>> CreateCommunityAsync(CreateCommunityRequestDto request, Guid userId)
@@ -179,6 +181,11 @@ public class CommunityService : ICommunityService
         switch (request.Action.ToLower())
         {
             case "approve":
+                var limitCheck = await _planLimitService.CheckLimitAsync(membership.CommunityId, "Pessoas", "MaxMembers");
+                if (!limitCheck.Allowed)
+                    return ApiResponseDto<bool>.ErrorResponse(
+                        $"Limite do plano {limitCheck.PlanName} atingido ({limitCheck.CurrentUsage}/{limitCheck.LimitValue}). Faça upgrade para continuar.",
+                        errorCode: "PLAN_LIMIT_EXCEEDED");
                 membership.Status = Models.Enums.MembershipStatus.Active;
                 membership.JoinedAt = DateTime.UtcNow;
                 break;
