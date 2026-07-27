@@ -17,6 +17,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       { path: 'feed', loadComponent: () => import('./features/feed/feed.component').then(m => m.FeedComponent) },
+      { path: 'community', loadComponent: () => import('./features/community-home/community-home.component').then(m => m.CommunityHomeComponent) },
       { path: 'members', loadComponent: () => import('./features/members/members.component').then(m => m.MembersComponent) },
       { path: 'groups', loadComponent: () => import('./features/groups/groups.component').then(m => m.GroupsComponent) },
       { path: 'events', loadComponent: () => import('./features/events/events.component').then(m => m.EventsComponent) },

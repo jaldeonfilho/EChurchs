@@ -11,72 +11,8 @@ import { CommunityService } from '../../core/services/community.service';
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, FormsModule],
   template: `
-    <!-- No community onboarding -->
-    <div class="onboarding" *ngIf="!hasCommunity">
-      <div class="onboarding-card">
-        <div class="onboarding-logo">
-          <span class="logo-icon">⛪</span>
-          <h1>Echurchs</h1>
-        </div>
-        <p class="onboarding-subtitle">Ligue a sua igreja à comunidade</p>
-
-        <div class="onboarding-actions">
-          <div class="action-card" (click)="showCreate = true; showSearch = false">
-            <div class="action-icon">➕</div>
-            <h3>Criar Comunidade</h3>
-            <p>Registre sua igreja e convide membros</p>
-          </div>
-          <div class="action-card" (click)="showSearch = true; showCreate = false">
-            <div class="action-icon">🔍</div>
-            <h3>Entrar numa Comunidade</h3>
-            <p>Pesquise e solicite entrada</p>
-          </div>
-        </div>
-
-        <!-- Create Community Form -->
-        <div class="onboarding-form" *ngIf="showCreate">
-          <h3>Criar sua Comunidade</h3>
-          <input type="text" [(ngModel)]="newCommunityName" placeholder="Nome da igreja" class="form-input">
-          <textarea [(ngModel)]="newCommunityDesc" placeholder="Descrição (opcional)" class="form-input" rows="2"></textarea>
-          <div class="form-row">
-            <input type="text" [(ngModel)]="newCommunityNipc" placeholder="NIPC (opcional)" class="form-input">
-            <input type="text" [(ngModel)]="newCommunityPhone" placeholder="Telefone (opcional)" class="form-input">
-          </div>
-          <input type="text" [(ngModel)]="newCommunityAddress" placeholder="Endereço (opcional)" class="form-input">
-          <div class="form-actions">
-            <button class="btn-secondary" (click)="showCreate = false">Cancelar</button>
-            <button class="btn-primary" (click)="createCommunity()" [disabled]="!newCommunityName || loading">
-              {{ loading ? 'Criando...' : 'Criar Comunidade' }}
-            </button>
-          </div>
-          <div class="form-error" *ngIf="formError">{{ formError }}</div>
-        </div>
-
-        <!-- Search Community -->
-        <div class="onboarding-form" *ngIf="showSearch">
-          <h3>Pesquisar Comunidade</h3>
-          <input type="text" [(ngModel)]="searchTerm" (input)="searchCommunities()" placeholder="Buscar por nome..." class="form-input">
-          <div class="search-results" *ngIf="searchResults.length > 0">
-            <div class="search-item" *ngFor="let c of searchResults" (click)="selectCommunity(c)">
-              <div class="search-item-avatar">{{ c.name.charAt(0) }}</div>
-              <div class="search-item-info">
-                <strong>{{ c.name }}</strong>
-                <span>{{ c.memberCount }} membros</span>
-              </div>
-              <button class="btn-small" (click)="joinCommunity(c.id); $event.stopPropagation()">Entrar</button>
-            </div>
-          </div>
-          <p class="no-results" *ngIf="searchTerm && searchResults.length === 0 && !loadingSearch">Nenhuma comunidade encontrada</p>
-        </div>
-
-        <div class="onboarding-footer">
-          <button class="btn-link" (click)="logout()">Sair da conta</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Main App (has community) -->
-    <div class="app-layout" *ngIf="hasCommunity">
+    <!-- Main App (feed é público: renderiza sempre, com ou sem comunidade) -->
+    <div class="app-layout">
       <!-- Top Navbar -->
       <header class="topbar">
         <div class="topbar-left">
@@ -109,6 +45,10 @@ import { CommunityService } from '../../core/services/community.service';
             <a routerLink="/feed" routerLinkActive="active" class="nav-item">
               <span class="nav-icon">🏠</span>
               <span>Feed</span>
+            </a>
+            <a routerLink="/community" routerLinkActive="active" class="nav-item">
+              <span class="nav-icon">⛪</span>
+              <span>A Comunidade</span>
             </a>
             <a routerLink="/members" routerLinkActive="active" class="nav-item">
               <span class="nav-icon">👥</span>
@@ -174,81 +114,78 @@ import { CommunityService } from '../../core/services/community.service';
 
         <!-- Right Sidebar (Quick Info) -->
         <aside class="right-sidebar">
-          <div class="sidebar-card">
-            <h4>Minha Comunidade</h4>
-            <div class="community-info">
-              <div class="community-avatar">{{ communityName.charAt(0) }}</div>
-              <div>
-                <strong>{{ communityName }}</strong>
-                <span class="member-count">{{ memberCount }} membros</span>
+          <ng-container *ngIf="hasCommunity">
+            <div class="sidebar-card">
+              <h4>Minha Comunidade</h4>
+              <div class="community-info">
+                <div class="community-avatar">{{ communityName.charAt(0) }}</div>
+                <div>
+                  <strong>{{ communityName }}</strong>
+                  <span class="member-count">{{ memberCount }} membros</span>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="sidebar-card">
-            <h4>Meu Plano</h4>
-            <p class="plan-name">{{ planName || 'Free' }}</p>
-            <a routerLink="/billing" class="btn-upgrade">Fazer upgrade</a>
+            <div class="sidebar-card">
+              <h4>Meu Plano</h4>
+              <p class="plan-name">{{ planName || 'Free' }}</p>
+              <a routerLink="/billing" class="btn-upgrade">Fazer upgrade</a>
+            </div>
+          </ng-container>
+
+          <div class="sidebar-card" *ngIf="!hasCommunity">
+            <h4>A minha comunidade</h4>
+            <p class="onboarding-hint">Ainda não pertences a nenhuma comunidade.</p>
+            <div class="onboarding-compact-actions">
+              <button class="btn-primary" (click)="showCreate = true; showSearch = false">➕ Criar Comunidade</button>
+              <button class="btn-secondary" (click)="showSearch = true; showCreate = false">🔍 Entrar numa Comunidade</button>
+            </div>
+
+            <!-- Create Community Form -->
+            <div class="onboarding-form" *ngIf="showCreate">
+              <input type="text" [(ngModel)]="newCommunityName" placeholder="Nome da igreja" class="form-input">
+              <textarea [(ngModel)]="newCommunityDesc" placeholder="Descrição (opcional)" class="form-input" rows="2"></textarea>
+              <input type="text" [(ngModel)]="newCommunityNipc" placeholder="NIPC (opcional)" class="form-input">
+              <input type="text" [(ngModel)]="newCommunityPhone" placeholder="Telefone (opcional)" class="form-input">
+              <input type="text" [(ngModel)]="newCommunityAddress" placeholder="Endereço (opcional)" class="form-input">
+              <div class="form-actions">
+                <button class="btn-secondary" (click)="showCreate = false">Cancelar</button>
+                <button class="btn-primary" (click)="createCommunity()" [disabled]="!newCommunityName || loading">
+                  {{ loading ? 'Criando...' : 'Criar' }}
+                </button>
+              </div>
+              <div class="form-error" *ngIf="formError">{{ formError }}</div>
+            </div>
+
+            <!-- Search Community -->
+            <div class="onboarding-form" *ngIf="showSearch">
+              <input type="text" [(ngModel)]="searchTerm" (input)="searchCommunities()" placeholder="Buscar por nome..." class="form-input">
+              <div class="search-results" *ngIf="searchResults.length > 0">
+                <div class="search-item" *ngFor="let c of searchResults" (click)="selectCommunity(c)">
+                  <div class="search-item-avatar">{{ c.name.charAt(0) }}</div>
+                  <div class="search-item-info">
+                    <strong>{{ c.name }}</strong>
+                    <span>{{ c.memberCount }} membros</span>
+                  </div>
+                  <button class="btn-small" (click)="joinCommunity(c.id); $event.stopPropagation()">Entrar</button>
+                </div>
+              </div>
+              <p class="no-results" *ngIf="searchTerm && searchResults.length === 0 && !loadingSearch">Nenhuma comunidade encontrada</p>
+            </div>
           </div>
         </aside>
       </div>
     </div>
   `,
   styles: [`
-    /* ========== ONBOARDING ========== */
-    .onboarding {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 2rem;
-    }
-    .onboarding-card {
-      background: white;
-      border-radius: 16px;
-      padding: 3rem;
-      max-width: 600px;
-      width: 100%;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-    }
-    .onboarding-logo {
-      text-align: center;
-      margin-bottom: 0.5rem;
-    }
-    .onboarding-logo .logo-icon { font-size: 3rem; }
-    .onboarding-logo h1 { font-size: 2rem; color: #1c1e21; margin-top: 0.5rem; }
-    .onboarding-subtitle {
-      text-align: center;
-      color: #65676b;
-      margin-bottom: 2rem;
-      font-size: 1.1rem;
-    }
-    .onboarding-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-    .action-card {
-      border: 2px solid #e4e6eb;
-      border-radius: 12px;
-      padding: 1.5rem;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .action-card:hover {
-      border-color: #1877f2;
-      background: #f0f7ff;
-    }
-    .action-icon { font-size: 2rem; margin-bottom: 0.5rem; }
-    .action-card h3 { font-size: 1rem; margin-bottom: 0.25rem; color: #1c1e21; }
-    .action-card p { font-size: 0.8rem; color: #65676b; }
+    /* ========== ONBOARDING (compact, sidebar) ========== */
+    .onboarding-hint { font-size: 0.85rem; color: #65676b; margin-bottom: 0.75rem; }
+    .onboarding-compact-actions { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.5rem; }
+    .onboarding-compact-actions button { width: 100%; }
     .onboarding-form {
       border-top: 1px solid #e4e6eb;
-      padding-top: 1.5rem;
+      padding-top: 1rem;
+      margin-top: 0.75rem;
     }
-    .onboarding-form h3 { margin-bottom: 1rem; font-size: 1.1rem; }
     .form-input {
       width: 100%;
       padding: 0.75rem 1rem;
@@ -328,15 +265,6 @@ import { CommunityService } from '../../core/services/community.service';
       cursor: pointer;
     }
     .no-results { color: #65676b; font-size: 0.9rem; margin-top: 0.5rem; }
-    .onboarding-footer { text-align: center; margin-top: 2rem; }
-    .btn-link {
-      background: none;
-      border: none;
-      color: #65676b;
-      cursor: pointer;
-      font-size: 0.9rem;
-    }
-    .btn-link:hover { text-decoration: underline; color: #1c1e21; }
 
     /* ========== APP LAYOUT ========== */
     .app-layout { min-height: 100vh; display: flex; flex-direction: column; }

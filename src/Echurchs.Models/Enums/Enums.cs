@@ -160,4 +160,11 @@ namespace Echurchs.Models.Enums
         Published = 1,
         Archived = 2
     }
+
+    public enum PostType
+    {
+        Live = 0,
+        Media = 1,
+        Event = 2
+    }
 }
