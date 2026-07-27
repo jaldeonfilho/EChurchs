@@ -83,6 +83,7 @@ import { MembershipResponse } from '../../core/models/community.model';
                 <div class="tx-meta">
                   <span class="tx-member" *ngIf="t.userName">{{ t.userName }}</span>
                   <span class="tx-ref" *ngIf="getReferenceLabel(t)">{{ getReferenceLabel(t) }}</span>
+                  <span class="tx-pay" *ngIf="getPaymentLabel(t)">{{ getPaymentLabel(t) }}</span>
                 </div>
               </div>
               <div class="tx-amount">{{ (t.amount ?? 0) | number:'1.2-2' }} EUR</div>
@@ -292,6 +293,7 @@ import { MembershipResponse } from '../../core/models/community.model';
                 <span class="tx-desc">{{ t.description || 'Sem descrição' }}</span>
                 <div class="tx-meta">
                   <span class="tx-ref" *ngIf="getReferenceLabel(t)">{{ getReferenceLabel(t) }}</span>
+                  <span class="tx-pay" *ngIf="getPaymentLabel(t)">{{ getPaymentLabel(t) }}</span>
                 </div>
               </div>
               <div class="tx-amount income">{{ (t.amount ?? 0) | number:'1.2-2' }} EUR</div>
@@ -448,6 +450,7 @@ import { MembershipResponse } from '../../core/models/community.model';
     .tx-desc { font-size: 0.78rem; color: #65676b; display: block; }
     .tx-meta { display: flex; gap: 0.4rem; margin-top: 0.15rem; flex-wrap: wrap; }
     .tx-member, .tx-ref, .tx-venc { font-size: 0.7rem; color: #1877f2; background: #e7f3ff; padding: 0.05rem 0.4rem; border-radius: 8px; }
+    .tx-pay { font-size: 0.7rem; color: #2ecc71; background: #e8f5e9; padding: 0.05rem 0.4rem; border-radius: 8px; }
     .tx-amount { font-weight: 700; font-size: 0.9rem; white-space: nowrap; flex-shrink: 0; }
     .tx-actions { display: flex; gap: 0.2rem; flex-shrink: 0; }
     .status-badge { font-size: 0.65rem; font-weight: 600; padding: 0.1rem 0.4rem; border-radius: 10px; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; }
@@ -824,6 +827,13 @@ export class FinancialComponent implements OnInit {
 
   getTxLabel(t: GenericModuleItem): string {
     return this.txLabels[(t.name ?? '')] || (t.name ?? '');
+  }
+
+  getPaymentLabel(t: GenericModuleItem): string {
+    const pm = t.metadata?.['paymentMethod'];
+    if (!pm) return '';
+    const labels: Record<string, string> = { Cash: 'Dinheiro', MBWay: 'MB Way', BankTransfer: 'Transferência', CreditCard: 'Cartão', Multibanco: 'Multibanco' };
+    return labels[pm] || pm;
   }
 
   getReferenceLabel(t: GenericModuleItem): string {

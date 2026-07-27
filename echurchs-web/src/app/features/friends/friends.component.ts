@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { MessagingService } from '../../core/services/messaging.service';
 import { Friendship, UserSearchResult } from '../../core/models/messaging.model';
 
@@ -26,6 +27,7 @@ import { Friendship, UserSearchResult } from '../../core/models/messaging.model'
               <strong>{{ u.name }}</strong>
               <span>{{ u.email }}</span>
             </div>
+            <button class="btn-msg" (click)="openChat(u)" title="Enviar mensagem">💬</button>
             <button class="btn-add" (click)="sendRequest(u)">Adicionar</button>
           </div>
         </div>
@@ -35,7 +37,7 @@ import { Friendship, UserSearchResult } from '../../core/models/messaging.model'
       <div class="section-header" *ngIf="pendingFriends.length > 0">
         <h3>Solicitações Pendentes</h3>
       </div>
-      <div class="friend-list">
+      <div class="friend-list" *ngIf="pendingFriends.length > 0">
         <div class="friend-card card" *ngFor="let f of pendingFriends">
           <div class="friend-avatar">{{ f.otherUserName.charAt(0) }}</div>
           <div class="friend-info">
@@ -56,11 +58,12 @@ import { Friendship, UserSearchResult } from '../../core/models/messaging.model'
       <div class="friend-list">
         <div class="friend-card card" *ngFor="let f of friends">
           <div class="friend-avatar">{{ f.otherUserName.charAt(0) }}</div>
-          <div class="friend-info">
+          <div class="friend-info" (click)="openChatById(f.otherUserId)" style="cursor:pointer">
             <strong>{{ f.otherUserName }}</strong>
-            <span class="status-friend">Amigo</span>
+            <span class="status-friend">Amigo · Clique para conversar</span>
           </div>
           <span class="friend-since">{{ f.createdAt | date:'dd/MM/yyyy' }}</span>
+          <button class="btn-msg" (click)="openChatById(f.otherUserId)" title="Conversar">💬</button>
         </div>
         <div class="empty-state card" *ngIf="friends.length === 0 && pendingFriends.length === 0">
           <span class="empty-icon">🤝</span>
@@ -90,14 +93,16 @@ import { Friendship, UserSearchResult } from '../../core/models/messaging.model'
     .result-info { flex: 1; }
     .result-info strong { display: block; font-size: 0.9rem; }
     .result-info span { font-size: 0.8rem; color: #65676b; }
-    .btn-add { padding: 0.35rem 0.75rem; background: #1877f2; color: white; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
-
+    .btn-add { padding: 0.35rem 0.75rem; background: #1877f2; color: white; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; margin-left: 0.25rem; }
+    .btn-msg { padding: 0.35rem 0.5rem; background: #e7f3ff; color: #1877f2; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; }
+    .btn-msg:hover { background: #d0e4ff; }
     .friend-card { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.25rem; }
     .friend-avatar { width: 44px; height: 44px; border-radius: 50%; background: #1877f2; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; flex-shrink: 0; }
     .friend-info { flex: 1; }
     .friend-info strong { font-size: 0.95rem; display: block; }
+    .friend-info strong:hover { color: #1877f2; }
     .status-pending { font-size: 0.8rem; color: #f39c12; }
-    .status-friend { font-size: 0.8rem; color: #65676b; }
+    .status-friend { font-size: 0.78rem; color: #65676b; }
     .friend-since { font-size: 0.8rem; color: #65676b; }
     .friend-actions { display: flex; gap: 0.5rem; }
     .btn-accept { padding: 0.35rem 0.75rem; background: #1877f2; color: white; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
@@ -113,7 +118,7 @@ export class FriendsComponent implements OnInit {
   searchQuery = '';
   searchResults: UserSearchResult[] = [];
 
-  constructor(private messagingService: MessagingService) {}
+  constructor(private messagingService: MessagingService, private router: Router) {}
 
   ngOnInit(): void {
     this.loadFriends();
@@ -156,6 +161,22 @@ export class FriendsComponent implements OnInit {
   rejectFriend(f: Friendship): void {
     this.messagingService.friendAction({ friendshipId: f.id, action: 'reject' }).subscribe(() => {
       this.loadPending();
+    });
+  }
+
+  openChat(user: UserSearchResult): void {
+    this.startChat(user.id);
+  }
+
+  openChatById(userId: string): void {
+    this.startChat(userId);
+  }
+
+  private startChat(userId: string): void {
+    this.messagingService.startConversation({ recipientUserId: userId }).subscribe(r => {
+      if (r.success && r.data) {
+        this.router.navigate(['/messages'], { queryParams: { conv: r.data.id } });
+      }
     });
   }
 }

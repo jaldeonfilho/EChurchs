@@ -31,6 +31,8 @@ import { CommunityService } from '../../core/services/community.service';
             <span class="user-name">{{ userName }}</span>
             <div class="dropdown-menu" *ngIf="showUserMenu">
               <a routerLink="/settings" (click)="showUserMenu = false">⚙️ Configurações</a>
+              <a routerLink="/friends" (click)="showUserMenu = false">🤝 Amigos</a>
+              <div class="dropdown-divider"></div>
               <a (click)="logout()">🚪 Sair</a>
             </div>
           </div>
@@ -122,10 +124,6 @@ import { CommunityService } from '../../core/services/community.service';
             <a routerLink="/messages" routerLinkActive="active" class="nav-item">
               <span class="nav-icon">💬</span>
               <span>Mensagens</span>
-            </a>
-            <a routerLink="/friends" routerLinkActive="active" class="nav-item">
-              <span class="nav-icon">🤝</span>
-              <span>Amigos</span>
             </a>
           </nav>
         </aside>
@@ -366,6 +364,7 @@ import { CommunityService } from '../../core/services/community.service';
       text-decoration: none;
     }
     .dropdown-menu a:hover { background: #f0f2f5; text-decoration: none; }
+    .dropdown-divider { height: 1px; background: #e4e6eb; margin: 0.35rem 0; }
 
     /* Body */
     .app-body {
