@@ -8,6 +8,7 @@ using Echurchs.Models.Entities.Teaching;
 using Echurchs.Models.Entities.Assets;
 using Echurchs.Models.Entities.Live;
 using Echurchs.Models.Entities.Donations;
+using Echurchs.Models.Entities.Feed;
 
 namespace Echurchs.Repository.Interfaces;
 
@@ -65,6 +66,8 @@ public interface IUnitOfWork : IDisposable
     IGenericRepository<Donation> Donations { get; }
     IGenericRepository<PaymentLink> PaymentLinks { get; }
     IGenericRepository<PaymentGatewayConfig> PaymentGatewayConfigs { get; }
+
+    IGenericRepository<Post> Posts { get; }
 
     Task<int> SaveChangesAsync();
 }

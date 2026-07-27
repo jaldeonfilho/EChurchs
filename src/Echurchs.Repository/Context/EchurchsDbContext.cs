@@ -8,6 +8,7 @@ using Echurchs.Models.Entities.Teaching;
 using Echurchs.Models.Entities.Assets;
 using Echurchs.Models.Entities.Live;
 using Echurchs.Models.Entities.Donations;
+using Echurchs.Models.Entities.Feed;
 using Echurchs.Repository.Seed;
 using Microsoft.EntityFrameworkCore;
 
@@ -69,6 +70,8 @@ public class EchurchsDbContext : DbContext
     public DbSet<Donation> Donations => Set<Donation>();
     public DbSet<PaymentLink> PaymentLinks => Set<PaymentLink>();
     public DbSet<PaymentGatewayConfig> PaymentGatewayConfigs => Set<PaymentGatewayConfig>();
+
+    public DbSet<Post> Posts => Set<Post>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -436,6 +439,17 @@ public class EchurchsDbContext : DbContext
             e.Property(pgc => pgc.PublicKey).HasMaxLength(500).IsRequired();
             e.Property(pgc => pgc.EncryptedSecretKey).HasMaxLength(2000).IsRequired();
             e.HasOne(pgc => pgc.Community).WithMany().HasForeignKey(pgc => pgc.CommunityId).OnDelete(DeleteBehavior.NoAction);
+        });
+
+        modelBuilder.Entity<Post>(e =>
+        {
+            e.HasKey(p => p.Id);
+            e.Property(p => p.Content).HasMaxLength(4000);
+            e.Property(p => p.MediaUrl).HasMaxLength(2000);
+            e.Property(p => p.LiveUrl).HasMaxLength(2000);
+            e.Property(p => p.EventTitle).HasMaxLength(300);
+            e.Property(p => p.EventLocation).HasMaxLength(500);
+            e.HasOne(p => p.Author).WithMany().HasForeignKey(p => p.AuthorId);
         });
 
         Seed.PlanSeedData.Seed(modelBuilder);

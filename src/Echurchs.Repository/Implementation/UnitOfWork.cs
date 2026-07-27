@@ -8,6 +8,7 @@ using Echurchs.Models.Entities.Teaching;
 using Echurchs.Models.Entities.Assets;
 using Echurchs.Models.Entities.Live;
 using Echurchs.Models.Entities.Donations;
+using Echurchs.Models.Entities.Feed;
 using Echurchs.Repository.Context;
 using Echurchs.Repository.Interfaces;
 
@@ -60,6 +61,7 @@ public class UnitOfWork : IUnitOfWork
     private IGenericRepository<Donation>? _donations;
     private IGenericRepository<PaymentLink>? _paymentLinks;
     private IGenericRepository<PaymentGatewayConfig>? _paymentGatewayConfigs;
+    private IGenericRepository<Post>? _posts;
 
     public UnitOfWork(EchurchsDbContext context)
     {
@@ -109,6 +111,7 @@ public class UnitOfWork : IUnitOfWork
     public IGenericRepository<Donation> Donations => _donations ??= new GenericRepository<Donation>(_context);
     public IGenericRepository<PaymentLink> PaymentLinks => _paymentLinks ??= new GenericRepository<PaymentLink>(_context);
     public IGenericRepository<PaymentGatewayConfig> PaymentGatewayConfigs => _paymentGatewayConfigs ??= new GenericRepository<PaymentGatewayConfig>(_context);
+    public IGenericRepository<Post> Posts => _posts ??= new GenericRepository<Post>(_context);
 
     public async Task<int> SaveChangesAsync()
     {
