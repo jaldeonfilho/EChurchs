@@ -81,6 +81,7 @@ import { CommunityService } from '../../core/services/community.service';
 
             <div class="nav-divider"></div>
             <div class="nav-section-title">Financeiro</div>
+            <ng-container *ngIf="isAdminOrFinancial">
             <div class="nav-expandable" [class.expanded]="financialExpanded">
               <a class="nav-item nav-parent" (click)="financialExpanded = !financialExpanded">
                 <span class="nav-icon">💰</span>
@@ -102,6 +103,11 @@ import { CommunityService } from '../../core/services/community.service';
                 </a>
               </div>
             </div>
+            </ng-container>
+            <a routerLink="/financial" routerLinkActive="active" class="nav-item" *ngIf="!isAdminOrFinancial">
+              <span class="nav-icon">🙏</span>
+              <span>Minhas Doações</span>
+            </a>
             <a routerLink="/donations" routerLinkActive="active" class="nav-item">
               <span class="nav-icon">💝</span>
               <span>Doações</span>
@@ -501,6 +507,10 @@ export class AdminLayoutComponent implements OnInit {
   userName = '';
   showUserMenu = false;
   financialExpanded = false;
+
+  get isAdminOrFinancial(): boolean {
+    return this.authService.isAdmin || this.authService.isFinancialManager;
+  }
 
   showCreate = false;
   showSearch = false;

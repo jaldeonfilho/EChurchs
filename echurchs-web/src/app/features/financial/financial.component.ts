@@ -248,21 +248,21 @@ import { MembershipResponse } from '../../core/models/community.model';
             <div class="filter-row">
               <div class="filter-group">
                 <label>Mês</label>
-                <select [(ngModel)]="entFilterMonth" (ngModelChange)="filterEntradas()">
+                <select [(ngModel)]="entFilterMonth" (ngModelChange)="filterMemberDonations()">
                   <option value="">Todos</option>
                   <option *ngFor="let m of months" [value]="m.value">{{ m.label }}</option>
                 </select>
               </div>
               <div class="filter-group">
                 <label>Ano</label>
-                <select [(ngModel)]="entFilterYear" (ngModelChange)="filterEntradas()">
+                <select [(ngModel)]="entFilterYear" (ngModelChange)="filterMemberDonations()">
                   <option value="">Todos</option>
                   <option *ngFor="let y of years" [value]="y">{{ y }}</option>
                 </select>
               </div>
               <div class="filter-group">
                 <label>Tipo</label>
-                <select [(ngModel)]="entFilterCategory" (ngModelChange)="filterEntradas()">
+                <select [(ngModel)]="entFilterCategory" (ngModelChange)="filterMemberDonations()">
                   <option value="">Todos</option>
                   <option value="Tithe">Dízimo</option>
                   <option value="Offering">Oferta</option>
@@ -623,7 +623,7 @@ export class FinancialComponent implements OnInit {
     this.financialService.getPersonalDonations().subscribe(r => {
       if (r.success && r.data) {
         this.allTransactions = r.data;
-        this.applyMemberFilters();
+        this.filterMemberDonations();
       }
     });
   }
@@ -735,7 +735,7 @@ export class FinancialComponent implements OnInit {
     this.balRows = rows;
   }
 
-  private applyMemberFilters(): void {
+  filterMemberDonations(): void {
     const month = this.entFilterMonth ? parseInt(this.entFilterMonth, 10) : undefined;
     const year = this.entFilterYear ? parseInt(this.entFilterYear, 10) : undefined;
     let tx = this.allTransactions;
