@@ -14,7 +14,7 @@ import { MembershipResponse } from '../../core/models/community.model';
     <div class="financial-page">
       <div class="page-header card">
         <h2>Financeiro</h2>
-        <button class="btn-primary" (click)="showForm = !showForm">{{ showForm ? 'Cancelar' : '+ Novo Registo' }}</button>
+        <button class="btn-primary" *ngIf="isAdminOrFinancial" (click)="showForm = !showForm">{{ showForm ? 'Cancelar' : '+ Novo Registo' }}</button>
       </div>
 
       <!-- Tabs: Admin or FinancialManager -->
@@ -332,7 +332,7 @@ import { MembershipResponse } from '../../core/models/community.model';
       <div class="form-card card" *ngIf="showForm">
         <h3>{{ editingId ? 'Editar Registo' : (activeTab === 'saidas' ? 'Nova Despesa' : 'Novo Registo de Entrada') }}</h3>
         <form (ngSubmit)="onSubmit()">
-          <div class="form-row">
+<div class="form-row">
             <div class="form-group">
               <label>Tipo *</label>
               <div class="radio-group">
@@ -345,10 +345,15 @@ import { MembershipResponse } from '../../core/models/community.model';
                 <label class="radio-label">
                   <input type="radio" name="entryType" value="Donation" [(ngModel)]="entryType"> Doação
                 </label>
-                <label class="radio-label" *ngIf="activeTab === 'saidas'">
-                  <input type="radio" name="entryType" value="Expense" [(ngModel)]="entryType"> Despesa
-                </label>
               </div>
+            </div>
+            <div class="form-group" *ngIf="entryType === 'Tithe' && isAdminOrFinancial">
+              <label>Membro *</label>
+              <select [(ngModel)]="selectedMemberId" name="memberId" required>
+                <option value="">Selecione o membro</option>
+                <option *ngFor="let m of members" [value]="m.userId">{{ m.userName }}</option>
+              </select>
+            </div>
             </div>
             <div class="form-group">
               <label>Valor (EUR) *</label>
@@ -377,7 +382,7 @@ import { MembershipResponse } from '../../core/models/community.model';
           <ng-container *ngIf="activeTab === 'entradas' || (!isAdminOrFinancial && activeTab === 'doacoes')">
             <div class="form-group">
               <label>Descrição</label>
-              <input type="text" [(ngModel)]="formData.description" name="description" placeholder="Ex: Dízimo mensal de julho">
+              <input type="text" [(ngModel)]="description" name="description" placeholder="Ex: Dízimo mensal de julho">
             </div>
             <div class="form-group">
               <label>Forma de Pagamento</label>
@@ -547,7 +552,7 @@ export class FinancialComponent implements OnInit {
   filterCategory = '';
   filterStatus = '';
 
-  formData: GenericModuleRequest = { amount: 0, description: '', name: '' };
+formData: GenericModuleRequest = { amount: 0, description: '', name: '' };
   entryType = 'Tithe';
   entryDate = '';
   referenceMonth = '';
@@ -556,6 +561,8 @@ export class FinancialComponent implements OnInit {
   expenseCategory = '';
   dueDate = '';
   paidStatus = 'S';
+  selectedMemberId = '';
+  description = '';
 
   totalTithes = 0;
   totalOfferings = 0;
@@ -728,12 +735,13 @@ export class FinancialComponent implements OnInit {
     if (this.paymentMethod) meta['paymentMethod'] = this.paymentMethod;
     if (this.paidStatus) meta['paidStatus'] = this.paidStatus;
     if (this.expenseCategory) meta['expenseCategory'] = this.expenseCategory;
+    if (this.entryType === 'Tithe' && this.selectedMemberId) meta['memberId'] = this.selectedMemberId;
 
     const isExpense = this.activeTab === 'saidas';
     const req: GenericModuleRequest = {
       name: isExpense ? 'Expense' : (this.isAdminOrFinancial ? this.entryType : 'Tithe'),
       amount: this.formData.amount,
-      description: this.formData.description || (this.entryType === 'Tithe' ? 'Dízimo' : this.entryType === 'Offering' ? 'Oferta' : 'Doação'),
+      description: this.description || (this.entryType === 'Tithe' ? 'Dízimo' : this.entryType === 'Offering' ? 'Oferta' : 'Doação'),
       startDate: this.entryDate,
       referenceMonth: parseInt(this.referenceMonth, 10),
       referenceYear: parseInt(this.referenceYear, 10),
@@ -760,8 +768,10 @@ export class FinancialComponent implements OnInit {
     } else {
       this.activeTab = 'entradas';
       this.formData = { amount: t.amount ?? 0, description: t.description ?? '', name: t.name ?? 'Tithe' };
+      this.description = t.description ?? '';
       this.entryType = t.name ?? 'Tithe';
       this.paymentMethod = t.metadata?.['paymentMethod'] ?? '';
+      this.selectedMemberId = t.userId ?? t.metadata?.['userId'] ?? '';
     }
     this.entryDate = t.startDate ? t.startDate.split('T')[0] : t.createdAt.split('T')[0];
     this.referenceMonth = t.referenceMonth?.toString() ?? '';
@@ -779,6 +789,8 @@ export class FinancialComponent implements OnInit {
     this.showForm = false;
     this.editingId = null;
     this.formData = { amount: 0, description: '', name: '' };
+    this.description = '';
+    this.selectedMemberId = '';
     this.entryType = 'Tithe';
     this.entryDate = new Date().toISOString().split('T')[0];
     this.referenceMonth = (new Date().getMonth() + 1).toString();
