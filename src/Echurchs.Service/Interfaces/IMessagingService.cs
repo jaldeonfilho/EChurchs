@@ -12,7 +12,9 @@ public interface IMessagingService
     Task<ApiResponseDto<List<FriendshipResponseDto>>> GetPendingFriendRequestsAsync(Guid userId);
     Task<ApiResponseDto<ConversationResponseDto>> StartConversationAsync(StartConversationRequestDto request, Guid userId);
     Task<ApiResponseDto<List<ConversationResponseDto>>> GetConversationsAsync(Guid userId);
+    Task<ApiResponseDto<ConversationResponseDto>> GetCommunityChatAsync(Guid communityId, Guid userId);
     Task<ApiResponseDto<List<MessageResponseDto>>> GetMessagesAsync(Guid conversationId, Guid userId);
     Task<ApiResponseDto<MessageResponseDto>> SendMessageAsync(SendMessageRequestDto request, Guid userId);
+    Task<ApiResponseDto<bool>> DeleteMessageAsync(Guid messageId, Guid userId);
     Task<ApiResponseDto<List<UserResponseDto>>> SearchUsersAsync(string search);
 }

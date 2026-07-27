@@ -45,8 +45,8 @@ public class FinancialService : IFinancialService
 
         var result = txList.Select(t => new GenericModuleResponseDto
         {
-            Id = t.Id, Title = t.Description ?? t.Type.ToString(),
-            Amount = t.Amount, Content = t.Description,
+            Id = t.Id, Name = t.Type.ToString(), Title = t.Description ?? t.Type.ToString(),
+            Amount = t.Amount, Content = t.Description, Description = t.Description,
             IsActive = true, CreatedAt = t.CreatedAt, StartDate = t.TransactionDate,
             ReferenceMonth = t.ReferenceMonth, ReferenceYear = t.ReferenceYear,
             UserId = t.UserId?.ToString(), UserName = null,
@@ -92,7 +92,8 @@ public class FinancialService : IFinancialService
         {
             Id = Guid.NewGuid(),
             CommunityId = communityId,
-            UserId = Guid.TryParse(request.Metadata?.GetValueOrDefault("userId"), out var uid) ? uid : userId,
+            UserId = Guid.TryParse(request.Metadata?.GetValueOrDefault("memberId"), out var uid) ? uid : 
+                     Guid.TryParse(request.Metadata?.GetValueOrDefault("userId"), out var uid2) ? uid2 : userId,
             CategoryId = request.CategoryId,
             Amount = request.Amount ?? 0,
             TransactionDate = request.StartDate ?? DateTime.UtcNow,
@@ -113,7 +114,7 @@ public class FinancialService : IFinancialService
         return ApiResponseDto<GenericModuleResponseDto>.SuccessResponse(new GenericModuleResponseDto
         {
             Id = transaction.Id, Amount = transaction.Amount,
-            Title = transaction.Description, IsActive = true, CreatedAt = transaction.CreatedAt
+            Title = transaction.Description, Description = transaction.Description, IsActive = true, CreatedAt = transaction.CreatedAt
         });
     }
 
@@ -150,7 +151,7 @@ public class FinancialService : IFinancialService
         return ApiResponseDto<GenericModuleResponseDto>.SuccessResponse(new GenericModuleResponseDto
         {
             Id = transaction.Id, Amount = transaction.Amount,
-            Title = transaction.Description, IsActive = true, CreatedAt = transaction.CreatedAt
+            Title = transaction.Description, Description = transaction.Description, IsActive = true, CreatedAt = transaction.CreatedAt
         });
     }
 
@@ -175,9 +176,9 @@ public class FinancialService : IFinancialService
 
         var result = transactions.Select(t => new GenericModuleResponseDto
         {
-            Id = t.Id, Title = t.Description ?? t.Type.ToString(),
-            Amount = t.Amount, IsActive = true, CreatedAt = t.CreatedAt,
-            StartDate = t.TransactionDate
+            Id = t.Id, Name = t.Type.ToString(), Title = t.Description ?? t.Type.ToString(),
+            Amount = t.Amount, Description = t.Description, IsActive = true, CreatedAt = t.CreatedAt,
+            StartDate = t.TransactionDate, ReferenceMonth = t.ReferenceMonth, ReferenceYear = t.ReferenceYear
         }).ToList();
 
         return ApiResponseDto<List<GenericModuleResponseDto>>.SuccessResponse(result);

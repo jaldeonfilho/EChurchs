@@ -18,6 +18,16 @@ export interface CreateCommunityRequest {
   address?: string;
 }
 
+export interface UpdateCommunityRequest {
+  name?: string;
+  description?: string;
+  nipc?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  logoUrl?: string;
+}
+
 export interface JoinCommunityRequest {
   communityId: string;
 }
@@ -25,7 +35,7 @@ export interface JoinCommunityRequest {
 export interface MembershipActionRequest {
   membershipId: string;
   action: string;
-  newRole?: string;
+  newRole?: any;
 }
 
 export interface MembershipResponse {

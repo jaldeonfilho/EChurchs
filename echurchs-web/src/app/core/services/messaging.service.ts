@@ -35,12 +35,20 @@ export class MessagingService {
     return this.http.get<ApiResponse<Conversation[]>>(`${this.apiUrl}/conversations`);
   }
 
+  getCommunityChat(communityId: string): Observable<ApiResponse<Conversation>> {
+    return this.http.get<ApiResponse<Conversation>>(`${this.apiUrl}/community-chat/${communityId}`);
+  }
+
   getMessages(conversationId: string): Observable<ApiResponse<Message[]>> {
     return this.http.get<ApiResponse<Message[]>>(`${this.apiUrl}/conversation/${conversationId}/messages`);
   }
 
   sendMessage(request: SendMessageRequest): Observable<ApiResponse<Message>> {
     return this.http.post<ApiResponse<Message>>(`${this.apiUrl}/message`, request);
+  }
+
+  deleteMessage(messageId: string): Observable<ApiResponse<boolean>> {
+    return this.http.delete<ApiResponse<boolean>>(`${this.apiUrl}/message/${messageId}`);
   }
 
   searchUsers(q: string): Observable<ApiResponse<UserSearchResult[]>> {

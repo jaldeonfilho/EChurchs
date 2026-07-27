@@ -80,4 +80,12 @@ public class CommunityController : ControllerBase
         if (!result.Success) return BadRequest(result);
         return Ok(result);
     }
+
+    [HttpPut("{communityId}")]
+    public async Task<ActionResult<ApiResponseDto<CommunityResponseDto>>> Update(Guid communityId, [FromBody] UpdateCommunityRequestDto request)
+    {
+        var result = await _communityService.UpdateCommunityAsync(communityId, request, UserId);
+        if (!result.Success) return BadRequest(result);
+        return Ok(result);
+    }
 }

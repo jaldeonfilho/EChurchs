@@ -303,4 +303,45 @@ public class CommunityService : ICommunityService
             CreatedAt = membership.CreatedAt
         });
     }
+
+    public async Task<ApiResponseDto<CommunityResponseDto>> UpdateCommunityAsync(Guid communityId, UpdateCommunityRequestDto request, Guid userId)
+    {
+        var community = await _unitOfWork.Communities.GetByIdAsync(communityId);
+        if (community == null)
+            return ApiResponseDto<CommunityResponseDto>.ErrorResponse("Comunidade não encontrada");
+
+        var membership = (await _unitOfWork.CommunityMemberships.FindAsync(
+            m => m.UserId == userId && m.CommunityId == communityId && m.Role == Models.Enums.CommunityRole.Admin && m.Status == Models.Enums.MembershipStatus.Active)).FirstOrDefault();
+        if (membership == null)
+            return ApiResponseDto<CommunityResponseDto>.ErrorResponse("Sem permissão para editar a comunidade");
+
+        if (request.Name != null) community.Name = request.Name;
+        if (request.Description != null) community.Description = request.Description;
+        if (request.Nipc != null) community.Nipc = request.Nipc;
+        if (request.Email != null) community.Email = request.Email;
+        if (request.Phone != null) community.Phone = request.Phone;
+        if (request.Address != null) community.Address = request.Address;
+        if (request.LogoUrl != null) community.LogoUrl = request.LogoUrl;
+        community.UpdatedAt = DateTime.UtcNow;
+
+        await _unitOfWork.Communities.UpdateAsync(community);
+        await _unitOfWork.SaveChangesAsync();
+
+        var memberCount = (await _unitOfWork.CommunityMemberships.FindAsync(
+            m => m.CommunityId == communityId && m.Status == Models.Enums.MembershipStatus.Active)).Count();
+        var subscription = (await _unitOfWork.CommunitySubscriptions.FindAsync(
+            s => s.CommunityId == communityId && s.Status == Models.Enums.SubscriptionStatus.Active)).FirstOrDefault();
+
+        return ApiResponseDto<CommunityResponseDto>.SuccessResponse(new CommunityResponseDto
+        {
+            Id = community.Id,
+            Name = community.Name,
+            Description = community.Description,
+            LogoUrl = community.LogoUrl,
+            Slug = community.Slug,
+            MemberCount = memberCount,
+            PlanName = subscription?.Plan?.Name,
+            CreatedAt = community.CreatedAt
+        });
+    }
 }

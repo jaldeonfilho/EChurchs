@@ -61,6 +61,14 @@ public class MessagingController : ControllerBase
         return Ok(await _messagingService.GetConversationsAsync(UserId));
     }
 
+    [HttpGet("community-chat/{communityId}")]
+    public async Task<ActionResult<ApiResponseDto<ConversationResponseDto>>> GetCommunityChat(Guid communityId)
+    {
+        var result = await _messagingService.GetCommunityChatAsync(communityId, UserId);
+        if (!result.Success) return BadRequest(result);
+        return Ok(result);
+    }
+
     [HttpGet("conversation/{conversationId}/messages")]
     public async Task<ActionResult<ApiResponseDto<List<MessageResponseDto>>>> GetMessages(Guid conversationId)
     {
@@ -71,6 +79,14 @@ public class MessagingController : ControllerBase
     public async Task<ActionResult<ApiResponseDto<MessageResponseDto>>> SendMessage([FromBody] SendMessageRequestDto request)
     {
         var result = await _messagingService.SendMessageAsync(request, UserId);
+        if (!result.Success) return BadRequest(result);
+        return Ok(result);
+    }
+
+    [HttpDelete("message/{messageId}")]
+    public async Task<ActionResult<ApiResponseDto<bool>>> DeleteMessage(Guid messageId)
+    {
+        var result = await _messagingService.DeleteMessageAsync(messageId, UserId);
         if (!result.Success) return BadRequest(result);
         return Ok(result);
     }

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Community, CreateCommunityRequest, JoinCommunityRequest, MembershipResponse, MembershipActionRequest } from '../models/community.model';
+import { Community, CreateCommunityRequest, UpdateCommunityRequest, JoinCommunityRequest, MembershipResponse, MembershipActionRequest } from '../models/community.model';
 import { ApiResponse } from '../models/api-response.model';
 import { environment } from '../../../environments/environment';
 
@@ -22,6 +22,10 @@ export class CommunityService {
 
   create(request: CreateCommunityRequest): Observable<ApiResponse<Community>> {
     return this.http.post<ApiResponse<Community>>(this.apiUrl, request);
+  }
+
+  update(id: string, request: UpdateCommunityRequest): Observable<ApiResponse<Community>> {
+    return this.http.put<ApiResponse<Community>>(`${this.apiUrl}/${id}`, request);
   }
 
   join(request: JoinCommunityRequest): Observable<ApiResponse<MembershipResponse>> {

@@ -166,6 +166,43 @@ public class MessagingService : IMessagingService
         return ApiResponseDto<List<ConversationResponseDto>>.SuccessResponse(result);
     }
 
+    public async Task<ApiResponseDto<ConversationResponseDto>> GetCommunityChatAsync(Guid communityId, Guid userId)
+    {
+        var membership = (await _unitOfWork.CommunityMemberships.FindAsync(
+            m => m.CommunityId == communityId && m.UserId == userId && m.Status == Models.Enums.MembershipStatus.Active)).FirstOrDefault();
+        if (membership == null)
+            return ApiResponseDto<ConversationResponseDto>.ErrorResponse("Sem acesso");
+
+        var allConv = (await _unitOfWork.ConversationParticipants.FindAsync(cp => cp.UserId == userId && cp.LeftAt == null)).ToList();
+        var convIds = allConv.Select(cp => cp.ConversationId).ToList();
+        var existing = (await _unitOfWork.Conversations.FindAsync(c => convIds.Contains(c.Id) && c.IsGroup && c.Title != null && c.Title.Contains("Chat Geral"))).FirstOrDefault();
+
+        if (existing != null)
+            return ApiResponseDto<ConversationResponseDto>.SuccessResponse(await MapConversationAsync(existing));
+
+        var members = (await _unitOfWork.CommunityMemberships.FindAsync(
+            m => m.CommunityId == communityId && m.Status == Models.Enums.MembershipStatus.Active)).ToList();
+        var newConv = new Conversation { Id = Guid.NewGuid(), IsGroup = true, Title = "Chat Geral" };
+        await _unitOfWork.Conversations.AddAsync(newConv);
+        foreach (var m in members)
+            await _unitOfWork.ConversationParticipants.AddAsync(new ConversationParticipant { Id = Guid.NewGuid(), ConversationId = newConv.Id, UserId = m.UserId });
+        await _unitOfWork.SaveChangesAsync();
+        return ApiResponseDto<ConversationResponseDto>.SuccessResponse(await MapConversationAsync(newConv));
+    }
+
+    public async Task<ApiResponseDto<bool>> DeleteMessageAsync(Guid messageId, Guid userId)
+    {
+        var message = await _unitOfWork.Messages.GetByIdAsync(messageId);
+        if (message == null)
+            return ApiResponseDto<bool>.ErrorResponse("Mensagem não encontrada");
+        if (message.SenderId != userId)
+            return ApiResponseDto<bool>.ErrorResponse("Sem permissão");
+
+        await _unitOfWork.Messages.DeleteAsync(messageId);
+        await _unitOfWork.SaveChangesAsync();
+        return ApiResponseDto<bool>.SuccessResponse(true);
+    }
+
     public async Task<ApiResponseDto<List<MessageResponseDto>>> GetMessagesAsync(Guid conversationId, Guid userId)
     {
         var participant = (await _unitOfWork.ConversationParticipants.FindAsync(

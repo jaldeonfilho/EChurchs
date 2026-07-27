@@ -31,6 +31,8 @@ import { CommunityService } from '../../core/services/community.service';
             <span class="user-name">{{ userName }}</span>
             <div class="dropdown-menu" *ngIf="showUserMenu">
               <a routerLink="/settings" (click)="showUserMenu = false">⚙️ Configurações</a>
+              <a routerLink="/friends" (click)="showUserMenu = false">🤝 Amigos</a>
+              <div class="dropdown-divider"></div>
               <a (click)="logout()">🚪 Sair</a>
             </div>
           </div>
@@ -81,9 +83,32 @@ import { CommunityService } from '../../core/services/community.service';
 
             <div class="nav-divider"></div>
             <div class="nav-section-title">Financeiro</div>
-            <a routerLink="/financial" routerLinkActive="active" class="nav-item">
-              <span class="nav-icon">💰</span>
-              <span>Financeiro</span>
+            <ng-container *ngIf="isAdminOrFinancial">
+            <div class="nav-expandable" [class.expanded]="financialExpanded">
+              <a class="nav-item nav-parent" (click)="financialExpanded = !financialExpanded">
+                <span class="nav-icon">💰</span>
+                <span>Financeiro</span>
+                <span class="nav-arrow">{{ financialExpanded ? '▼' : '▶' }}</span>
+              </a>
+              <div class="sub-nav" *ngIf="financialExpanded">
+                <a routerLink="/financial" [queryParams]="{tab:'entradas'}" routerLinkActive="active" class="nav-item sub-item">
+                  <span class="nav-icon">📥</span>
+                  <span>Entradas</span>
+                </a>
+                <a routerLink="/financial" [queryParams]="{tab:'saidas'}" routerLinkActive="active" class="nav-item sub-item">
+                  <span class="nav-icon">📤</span>
+                  <span>Saídas</span>
+                </a>
+                <a routerLink="/financial" [queryParams]="{tab:'balanco'}" routerLinkActive="active" class="nav-item sub-item">
+                  <span class="nav-icon">📊</span>
+                  <span>Balanço Geral</span>
+                </a>
+              </div>
+            </div>
+            </ng-container>
+            <a routerLink="/financial" routerLinkActive="active" class="nav-item" *ngIf="!isAdminOrFinancial">
+              <span class="nav-icon">🙏</span>
+              <span>Minhas Doações</span>
             </a>
             <a routerLink="/donations" routerLinkActive="active" class="nav-item">
               <span class="nav-icon">💝</span>
@@ -99,10 +124,6 @@ import { CommunityService } from '../../core/services/community.service';
             <a routerLink="/messages" routerLinkActive="active" class="nav-item">
               <span class="nav-icon">💬</span>
               <span>Mensagens</span>
-            </a>
-            <a routerLink="/friends" routerLinkActive="active" class="nav-item">
-              <span class="nav-icon">🤝</span>
-              <span>Amigos</span>
             </a>
           </nav>
         </aside>
@@ -343,6 +364,7 @@ import { CommunityService } from '../../core/services/community.service';
       text-decoration: none;
     }
     .dropdown-menu a:hover { background: #f0f2f5; text-decoration: none; }
+    .dropdown-divider { height: 1px; background: #e4e6eb; margin: 0.35rem 0; }
 
     /* Body */
     .app-body {
@@ -380,6 +402,14 @@ import { CommunityService } from '../../core/services/community.service';
     .nav-item.active { background: #e7f3ff; color: #1877f2; }
     .nav-icon { font-size: 1.2rem; width: 24px; text-align: center; }
     .nav-divider { height: 1px; background: #e4e6eb; margin: 0.5rem 0.75rem; }
+    .nav-expandable { display: flex; flex-direction: column; }
+    .nav-expandable.expanded > .nav-parent { background: #e7f3ff; color: #1877f2; }
+    .nav-parent { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: #1c1e21; font-size: 0.95rem; font-weight: 500; text-decoration: none; transition: background 0.2s; cursor: pointer; }
+    .nav-parent:hover { background: #f0f2f5; text-decoration: none; }
+    .sub-nav { padding-left: 0.75rem; }
+    .sub-item { font-size: 0.88rem; padding: 0.45rem 0.75rem; margin: 1px 0; }
+    .sub-item .nav-icon { font-size: 1rem; width: 20px; }
+    .nav-arrow { margin-left: auto; font-size: 0.7rem; color: #65676b; }
     .nav-section-title {
       padding: 0.25rem 0.75rem;
       font-size: 0.75rem;
@@ -475,6 +505,11 @@ export class AdminLayoutComponent implements OnInit {
   planName = '';
   userName = '';
   showUserMenu = false;
+  financialExpanded = false;
+
+  get isAdminOrFinancial(): boolean {
+    return this.authService.isAdmin || this.authService.isFinancialManager;
+  }
 
   showCreate = false;
   showSearch = false;

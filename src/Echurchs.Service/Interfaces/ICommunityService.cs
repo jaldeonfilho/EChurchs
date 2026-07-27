@@ -14,4 +14,5 @@ public interface ICommunityService
     Task<ApiResponseDto<List<MembershipResponseDto>>> GetPendingMembershipsAsync(Guid communityId, Guid adminUserId);
     Task<ApiResponseDto<List<MembershipResponseDto>>> GetMembersAsync(Guid communityId);
     Task<ApiResponseDto<MembershipResponseDto>> LeaveCommunityAsync(Guid userId);
+    Task<ApiResponseDto<CommunityResponseDto>> UpdateCommunityAsync(Guid communityId, UpdateCommunityRequestDto request, Guid userId);
 }
