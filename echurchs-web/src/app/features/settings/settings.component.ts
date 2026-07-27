@@ -43,63 +43,50 @@ import { UpdateProfileRequest } from '../../core/models/user.model';
       </div>
 
       <!-- Community Settings (Admin only) -->
-      <ng-container *ngIf="isAdmin && community">
-        <div class="card settings-section">
+      <div class="card settings-section" *ngIf="isAdmin">
+        <div class="section-header">
           <h3>Gerir Comunidade</h3>
-          <div class="section-header">
-            <span class="section-subtitle">Editar dados da comunidade</span>
-            <button class="btn-edit" (click)="openCommunityModal()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-              Editar
-            </button>
-          </div>
-          <div class="community-detail"><label>Nome</label><span>{{ community.name }}</span></div>
-          <div class="community-detail" *ngIf="community.description"><label>Descrição</label><span>{{ community.description }}</span></div>
-          <div class="community-detail" *ngIf="community.memberCount"><label>Membros</label><span>{{ community.memberCount }}</span></div>
+          <button class="btn-edit" (click)="openCommunityModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+            Editar
+          </button>
         </div>
+        <div class="community-detail"><label>Nome</label><span>{{ community?.name || communityName }}</span></div>
+        <div class="community-detail" *ngIf="community?.description"><label>Descrição</label><span>{{ community?.description }}</span></div>
+        <div class="community-detail" *ngIf="community?.memberCount || memberCount"><label>Membros</label><span>{{ community?.memberCount || memberCount }}</span></div>
+        <div class="community-detail"><label>Plano</label><span>{{ planName }}</span></div>
 
-        <!-- Pending Members -->
-        <div class="card settings-section" *ngIf="pendingMembers.length > 0">
-          <h4>Solicitações Pendentes ({{ pendingMembers.length }})</h4>
-          <div class="pending-list">
-            <div class="pending-item" *ngFor="let m of pendingMembers">
-              <div class="pending-avatar">{{ m.userName.charAt(0) }}</div>
-              <div class="pending-info"><strong>{{ m.userName }}</strong><span>{{ m.createdAt | date:'dd/MM/yyyy' }}</span></div>
-              <div class="pending-actions">
-                <button class="btn-accept" (click)="approveMember(m)">Aceitar</button>
-                <button class="btn-reject" (click)="rejectMember(m)">Rejeitar</button>
-              </div>
+        <button class="btn-pending" *ngIf="pendingMembers.length > 0" (click)="showPendingModal = true">
+          📋 Solicitações Pendentes ({{ pendingMembers.length }})
+        </button>
+      </div>
+
+      <!-- Members Management (Admin only) -->
+      <div class="card settings-section" *ngIf="isAdmin">
+        <h3>Gerir Membros ({{ allMembers.length }})</h3>
+        <div class="member-search">
+          <input type="text" [(ngModel)]="memberSearch" placeholder="Pesquisar membro..." class="search-input">
+        </div>
+        <div class="members-list">
+          <div class="member-item" *ngFor="let m of filteredMembers">
+            <div class="member-avatar" [style.background]="getAvatarColor(m)">{{ m.userName.charAt(0) }}</div>
+            <div class="member-info">
+              <strong>{{ m.userName }}</strong>
+              <span class="member-role">{{ getRoleName(m.role) }}</span>
+            </div>
+            <div class="member-actions" *ngIf="m.userId !== currentUserId">
+              <select class="role-select" [value]="m.role" (change)="changeRole(m, $event)">
+                <option value="Admin">Admin</option>
+                <option value="FinancialManager">Financeiro</option>
+                <option value="Leader">Líder</option>
+                <option value="Member">Membro</option>
+              </select>
+              <button class="btn-remove" (click)="removeMember(m)">Remover</button>
             </div>
           </div>
+          <div class="empty" *ngIf="filteredMembers.length === 0">Nenhum membro encontrado</div>
         </div>
-
-        <!-- Members Management -->
-        <div class="card settings-section">
-          <h3>Gerir Membros ({{ allMembers.length }})</h3>
-          <div class="member-search">
-            <input type="text" [(ngModel)]="memberSearch" placeholder="Pesquisar membro..." class="search-input">
-          </div>
-          <div class="members-list">
-            <div class="member-item" *ngFor="let m of filteredMembers">
-              <div class="member-avatar" [style.background]="getAvatarColor(m)">{{ m.userName.charAt(0) }}</div>
-              <div class="member-info">
-                <strong>{{ m.userName }}</strong>
-                <span class="member-role">{{ getRoleName(m.role) }}</span>
-              </div>
-              <div class="member-actions" *ngIf="m.userId !== currentUserId">
-                <select class="role-select" [value]="m.role" (change)="changeRole(m, $event)">
-                  <option value="Admin">Admin</option>
-                  <option value="FinancialManager">Financeiro</option>
-                  <option value="Leader">Líder</option>
-                  <option value="Member">Membro</option>
-                </select>
-                <button class="btn-remove" (click)="removeMember(m)">Remover</button>
-              </div>
-            </div>
-            <div class="empty" *ngIf="filteredMembers.length === 0">Nenhum membro encontrado</div>
-          </div>
-        </div>
-      </ng-container>
+      </div>
 
       <!-- Community Info (non-admin) -->
       <div class="card settings-section" *ngIf="!isAdmin">
@@ -164,6 +151,25 @@ import { UpdateProfileRequest } from '../../core/models/user.model';
           <div class="modal-footer"><button class="btn-cancel" (click)="closeCommunityModal()">Cancelar</button><button class="btn-save" (click)="saveCommunity()" [disabled]="communitySaving">{{ communitySaving ? 'A guardar...' : 'Guardar' }}</button></div>
         </div>
       </div>
+
+      <!-- Pending Requests Modal -->
+      <div class="modal-overlay" *ngIf="showPendingModal" (click)="showPendingModal = false">
+        <div class="modal card" (click)="$event.stopPropagation()">
+          <div class="modal-header"><h3>Solicitações Pendentes ({{ pendingMembers.length }})</h3><button class="close-btn" (click)="showPendingModal = false">&times;</button></div>
+          <div class="modal-body">
+            <div class="pending-item" *ngFor="let m of pendingMembers">
+              <div class="pending-avatar">{{ m.userName.charAt(0) }}</div>
+              <div class="pending-info"><strong>{{ m.userName }}</strong><span>{{ m.createdAt | date:'dd/MM/yyyy' }}</span></div>
+              <div class="pending-actions">
+                <button class="btn-accept" (click)="approveMember(m)">✅ Aceitar</button>
+                <button class="btn-reject" (click)="rejectMember(m)">❌ Rejeitar</button>
+              </div>
+            </div>
+            <div class="empty" *ngIf="pendingMembers.length === 0">Nenhuma solicitação pendente</div>
+          </div>
+          <div class="modal-footer"><button class="btn-cancel" (click)="showPendingModal = false">Fechar</button></div>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
@@ -174,6 +180,8 @@ import { UpdateProfileRequest } from '../../core/models/user.model';
     .settings-section { padding: 1.25rem; }
     .settings-section h3 { margin: 0 0 1rem; font-size: 1rem; color: #1c1e21; }
     .settings-section h4 { margin: 0 0 0.75rem; font-size: 0.9rem; color: #65676b; }
+    .admin-info { background: #e7f3ff; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem; color: #1877f2; }
+    .admin-section { margin-top: 1rem; }
     .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
     .section-header h3 { margin: 0; }
     .section-subtitle { font-size: 0.85rem; color: #65676b; }
@@ -214,6 +222,8 @@ import { UpdateProfileRequest } from '../../core/models/user.model';
     .role-select:focus { border-color: #1877f2; }
     .btn-remove { padding: 0.3rem 0.5rem; background: #fce4e4; color: #e74c3c; border: none; border-radius: 4px; font-size: 0.75rem; cursor: pointer; }
     .btn-remove:hover { background: #f5c6c6; }
+    .btn-pending { display: block; width: 100%; margin-top: 0.75rem; padding: 0.6rem; background: #fff3e0; color: #e67e22; border: 1px solid #ffe0b2; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; text-align: center; }
+    .btn-pending:hover { background: #ffe0b2; }
     .empty { text-align: center; padding: 1.5rem; color: #65676b; font-size: 0.85rem; }
     .danger-zone { border: 1px solid #fce4e4; }
     .danger-zone h3 { color: #e74c3c; }
@@ -242,8 +252,11 @@ export class SettingsComponent implements OnInit {
   userEmail = '';
   communityName = '';
   planName = 'Free';
+  memberCount = 0;
   currentRole = '';
-  isAdmin = false;
+  get isAdmin(): boolean {
+    return this.authService.isAdmin;
+  }
   currentUserId = '';
   community: Community | null = null;
 
@@ -259,6 +272,7 @@ export class SettingsComponent implements OnInit {
   showCommunityModal = false;
   communityForm: UpdateCommunityRequest = {};
   communitySaving = false;
+  showPendingModal = false;
 
   private avatarColors = ['#1877f2', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#e67e22', '#3498db'];
 
@@ -269,30 +283,40 @@ export class SettingsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const user = this.authService.currentUser;
-    if (user) {
-      this.currentUserId = user.id;
-      this.userEmail = user.email;
-      this.currentRole = user.memberships?.[0]?.role ?? '';
-      this.isAdmin = this.authService.isAdmin;
-      this.form = {
-        name: user.name, phone: user.phone || '', bio: user.bio || '',
-        dateOfBirth: user.dateOfBirth ? user.dateOfBirth.split('T')[0] : '',
-        gender: user.gender || '', maritalStatus: user.maritalStatus || '',
-        address: user.address || '', city: user.city || '',
-        district: user.district || '', postalCode: user.postalCode || ''
-      };
-    }
+    this.currentUserId = this.authService.currentUser?.id ?? '';
+    this.userEmail = this.authService.currentUser?.email ?? '';
+    this.currentRole = this.authService.currentUser?.memberships?.[0]?.role ?? '';
+    this.form = {
+      name: this.authService.currentUser?.name || '',
+      phone: this.authService.currentUser?.phone || '',
+      bio: this.authService.currentUser?.bio || '',
+      dateOfBirth: this.authService.currentUser?.dateOfBirth ? this.authService.currentUser.dateOfBirth.split('T')[0] : '',
+      gender: this.authService.currentUser?.gender || '',
+      maritalStatus: this.authService.currentUser?.maritalStatus || '',
+      address: this.authService.currentUser?.address || '',
+      city: this.authService.currentUser?.city || '',
+      district: this.authService.currentUser?.district || '',
+      postalCode: this.authService.currentUser?.postalCode || ''
+    };
     this.communityName = this.authService.currentCommunityName ?? '';
     this.loadData();
+
+    this.authService.currentUser$.subscribe(() => {
+      this.communityName = this.authService.currentCommunityName ?? '';
+      this.loadData();
+    });
   }
 
   loadData(): void {
     const cid = this.authService.currentCommunityId;
     if (!cid) return;
     this.billingService.getUsage().subscribe(r => { if (r.success && r.data) this.planName = r.data.planName; });
-    if (!this.isAdmin) return;
-    this.communityService.getById(cid).subscribe(r => { if (r.success && r.data) this.community = r.data; });
+    this.communityService.getById(cid).subscribe(r => {
+      if (r.success && r.data) {
+        this.community = r.data;
+        this.memberCount = r.data.memberCount;
+      }
+    });
     this.communityService.getPending(cid).subscribe(r => { if (r.success && r.data) this.pendingMembers = r.data; });
     this.communityService.getMembers(cid).subscribe(r => { if (r.success && r.data) this.allMembers = r.data; });
   }
