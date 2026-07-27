@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Echurchs.Models.Entities.Core;
 
 public class Community
@@ -19,4 +21,7 @@ public class Community
     public User Creator { get; set; } = null!;
     public CommunitySubscription? Subscription { get; set; }
     public ICollection<CommunityMembership> Memberships { get; set; } = new List<CommunityMembership>();
+
+    [NotMapped]
+    public int MemberCount { get; set; }
 }

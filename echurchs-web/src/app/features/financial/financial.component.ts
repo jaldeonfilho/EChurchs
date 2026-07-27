@@ -591,8 +591,8 @@ export class FinancialComponent implements OnInit {
 
   constructor(private authService: AuthService, private financialService: FinancialService) {
     const now = new Date();
-    this.filterReferenceMonth = (now.getMonth() + 1).toString();
-    this.filterReferenceYear = now.getFullYear().toString();
+    this.filterReferenceMonth = null;
+    this.filterReferenceYear = null;
     const currentYear = now.getFullYear();
     this.years = [currentYear.toString(), (currentYear - 1).toString(), (currentYear - 2).toString()];
     this.referenceMonth = (now.getMonth() + 1).toString();
